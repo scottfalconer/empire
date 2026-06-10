@@ -78,7 +78,9 @@ final class EmpireEditorialTest extends ExistingSiteBase {
 
     $this->drupalGet($terms->load($empty)->toUrl()->toString());
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains('No videos in this collection yet');
+    // R6 reworded the empty-state to be vocabulary-neutral (it is on the shared
+    // taxonomy_term view, shown on tags/channel term pages too).
+    $this->assertSession()->pageTextContains('No videos here yet');
   }
 
   /**
