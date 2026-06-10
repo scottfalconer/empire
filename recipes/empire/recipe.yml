@@ -8,8 +8,8 @@ recipes:
   # foundation; composing it here makes the recipe self-contained, so a
   # marketplace `composer require drupal/empire` + `drush recipe empire` (or an
   # installer-selected Empire) builds the full site instead of silently
-  # depending on the baseline having been applied first. See DEVIATIONS.md for
-  # the Site-on-Site rationale.
+  # depending on the baseline having been applied first. See the Site-on-Site
+  # composition note in docs/architecture.md for the full rationale.
   - drupal_cms_site_template_base
   # Shared content-type foundations Empire's empire_video reuses: the
   # field_content body field + format, field_tags + the tags vocabulary, the

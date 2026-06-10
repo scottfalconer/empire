@@ -3,6 +3,17 @@
 > Feeds does the ingestion. Drupal does the content/rendering. Empire Tools makes
 > it feel like a product.
 
+## Site-on-Site composition
+
+Empire is itself a `type: Site` recipe, and it composes the `type: Site` baseline
+`drupal_cms_site_template_base` (plus `drupal_cms_content_type_base` and
+`drupal_cms_forms`). Composing a Site recipe inside another Site recipe is a
+deliberate deviation from the usual "apply the baseline first, then a content
+recipe" flow: it makes Empire self-contained, so a single `drush recipe empire`
+(or a marketplace `composer require drupal/empire`) installs the whole site —
+admin UI, authentication, media, privacy/consent, SEO, HTML email — without the
+operator needing to know to apply the baseline first.
+
 ## Why Feeds (not a custom importer)
 
 The two-feed pipeline was proven empirically and does everything v1 needs:
