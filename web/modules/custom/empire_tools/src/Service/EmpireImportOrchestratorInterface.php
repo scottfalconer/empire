@@ -33,7 +33,10 @@ interface EmpireImportOrchestratorInterface {
    *   The empire_channel term.
    * @param int $node_feed_id
    *   The video feed instance id.
+   * @param bool $success
+   *   Whether the import completed without a feed error; the "last imported"
+   *   timestamp only advances when TRUE.
    */
-  public function postProcess(TermInterface $channel, int $node_feed_id): void;
+  public function postProcess(TermInterface $channel, int $node_feed_id, bool $success = TRUE): void;
 
 }

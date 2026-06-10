@@ -8,6 +8,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\empire_tools\Form\SetupForm;
@@ -70,6 +71,7 @@ final class SetupFormTest extends UnitTestCase {
       $this->createMock(ThumbnailUpgrader::class),
       $this->createMock(TimeInterface::class),
       $this->createMock(LoggerInterface::class),
+      $this->createMock(LockBackendInterface::class),
     );
 
     // The form's logger must record the failure.
@@ -116,6 +118,7 @@ final class SetupFormTest extends UnitTestCase {
       $this->createMock(ThumbnailUpgrader::class),
       $this->createMock(TimeInterface::class),
       $this->createMock(LoggerInterface::class),
+      $this->createMock(LockBackendInterface::class),
     );
     $setup_status = new EmpireSetupStatus($entity_type_manager);
     $form = new SetupForm($resolver, $feed_instance_manager, $orchestrator, $setup_status, $this->createMock(LoggerInterface::class));

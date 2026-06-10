@@ -6,6 +6,7 @@ namespace Drupal\empire_tools\Service;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\feeds\FeedInterface;
 use Drupal\media\MediaInterface;
 use Drupal\taxonomy\TermInterface;
@@ -22,12 +23,28 @@ use Psr\Log\LoggerInterface;
  */
 final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterface {
 
+  /**
+   * Seconds the per-channel import lock is held before it auto-expires.
+   *
+   * Comfortably above the worst-case synchronous import (bounded by the feed +
+   * per-request HTTP timeouts and the execution cap below), so a real import
+   * never loses its lock, while a crashed worker's stale lock clears in minutes
+   * rather than blocking Refresh indefinitely.
+   */
+  private const IMPORT_LOCK_TIMEOUT = 600.0;
+
+  /**
+   * Max seconds a synchronous import may run before PHP aborts it.
+   */
+  private const IMPORT_TIME_LIMIT = 300;
+
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly FeedInstanceManager $feedInstanceManager,
     private readonly ThumbnailUpgrader $thumbnailUpgrader,
     private readonly TimeInterface $time,
     private readonly LoggerInterface $logger,
+    private readonly LockBackendInterface $lock,
   ) {}
 
   /**
@@ -38,22 +55,43 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    *    'videos' => ['count' => int, 'error' => ?string]].
    */
   public function import(TermInterface $channel): array {
-    // The import drives two Feeds imports + a maxres thumbnail fetch per video,
-    // run synchronously from the setup/refresh submit. The work self-bounds via
-    // the feed + per-request HTTP timeouts; lift PHP's max_execution_time so a
-    // slow channel does not hit a mid-import timeout (the synchronous design is
-    // accepted — a batch is a possible future enhancement).
-    @set_time_limit(0);
-    $feeds = $this->feedInstanceManager->getFeeds($channel);
+    // Guard against a double-click, or an overlapping Refresh + hourly cron,
+    // running two imports against the same channel's feeds at once. A second
+    // caller gets a "busy" report (surfaced to the user as a warning) instead.
+    $lock_id = 'empire_tools.import.' . $channel->id();
+    if (!$this->lock->acquire($lock_id, self::IMPORT_LOCK_TIMEOUT)) {
+      $busy = 'An import is already running for this channel — please wait a moment and try again.';
+      return [
+        'media' => ['count' => 0, 'error' => $busy],
+        'videos' => ['count' => 0, 'error' => $busy],
+      ];
+    }
 
-    $report = [
-      'media' => $this->runImport($feeds['media']),
-      'videos' => $this->runImport($feeds['videos']),
-    ];
+    try {
+      // The import drives two Feeds imports + a maxres thumbnail fetch per
+      // video, run synchronously from the setup/refresh submit. The work
+      // self-bounds via the feed + per-request HTTP timeouts; raise PHP's
+      // max_execution_time to a finite cap so a slow channel does not hit a
+      // mid-import timeout, yet a hung fetch cannot pin a worker forever (the
+      // synchronous design is accepted — a batch is a possible future
+      // enhancement).
+      @set_time_limit(self::IMPORT_TIME_LIMIT);
+      $feeds = $this->feedInstanceManager->getFeeds($channel);
 
-    $this->postProcess($channel, (int) $feeds['videos']->id());
+      $report = [
+        'media' => $this->runImport($feeds['media']),
+        'videos' => $this->runImport($feeds['videos']),
+      ];
 
-    return $report;
+      // Stamp "last imported" only on a clean run (see postProcess()).
+      $success = empty($report['media']['error']) && empty($report['videos']['error']);
+      $this->postProcess($channel, (int) $feeds['videos']->id(), $success);
+
+      return $report;
+    }
+    finally {
+      $this->lock->release($lock_id);
+    }
   }
 
   /**
@@ -64,11 +102,18 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    * features-only-if-none, skips already-hi-res), so it is safe after every
    * import — wizard, refresh, or the hourly cron run (empire_tools_cron) — so
    * cron-imported videos get stamped + upgraded too.
+   *
+   * The "last imported" timestamp advances only when $success is TRUE, so a run
+   * where a feed errored (YouTube unreachable, zero items) does not make the
+   * dashboard claim a fresh import that brought in nothing. The stamp/hero/
+   * thumbnail steps for whatever DID import still run regardless.
    */
-  public function postProcess(TermInterface $channel, int $node_feed_id): void {
+  public function postProcess(TermInterface $channel, int $node_feed_id, bool $success = TRUE): void {
     try {
       $this->stampChannel($channel, $node_feed_id);
-      $channel->set('field_last_imported_at', $this->time->getRequestTime())->save();
+      if ($success) {
+        $channel->set('field_last_imported_at', $this->time->getRequestTime())->save();
+      }
       $this->ensureFeaturedVideo();
       $this->upgradeThumbnails($node_feed_id);
     }

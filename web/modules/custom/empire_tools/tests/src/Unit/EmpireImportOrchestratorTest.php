@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\empire_tools\Service\EmpireImportOrchestrator;
 use Drupal\empire_tools\Service\FeedInstanceManager;
@@ -158,6 +159,71 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
   }
 
   /**
+   * A second overlapping import is rejected: lock held → busy, feeds untouched.
+   */
+  public function testImportIsRejectedWhenLockHeld(): void {
+    $media = $this->createMock(FeedInterface::class);
+    $media->expects($this->never())->method('import');
+    $videos = $this->createMock(FeedInterface::class);
+    $videos->expects($this->never())->method('import');
+
+    $lock = $this->createMock(LockBackendInterface::class);
+    $lock->method('acquire')->willReturn(FALSE);
+    $lock->expects($this->never())->method('release');
+
+    $orchestrator = $this->orchestrator($media, $videos, [], [], $this->createMock(LoggerInterface::class), $this->channel(), $lock);
+    $report = $orchestrator->import($this->channel());
+
+    $this->assertNotNull($report['media']['error'], 'A busy import reports an error per feed.');
+    $this->assertNotNull($report['videos']['error']);
+    $this->assertSame(0, $report['media']['count']);
+  }
+
+  /**
+   * The per-channel import lock is acquired then released around a clean run.
+   */
+  public function testImportLockIsReleasedAfterRun(): void {
+    $lock = $this->createMock(LockBackendInterface::class);
+    $lock->method('acquire')->willReturn(TRUE);
+    $lock->expects($this->once())->method('release')
+      ->with('empire_tools.import.' . self::CHANNEL_ID);
+
+    $orchestrator = $this->orchestrator(
+      $this->feed(self::MEDIA_FEED_ID),
+      $this->feed(self::NODE_FEED_ID),
+      [],
+      [],
+      $this->createMock(LoggerInterface::class),
+      $this->channel(),
+      $lock,
+    );
+    $orchestrator->import($this->channel());
+  }
+
+  /**
+   * The last-imported timestamp is not advanced when a feed errored (R8).
+   */
+  public function testLastImportedNotStampedOnFeedError(): void {
+    $media = $this->createMock(FeedInterface::class);
+    $media->method('id')->willReturn(self::MEDIA_FEED_ID);
+    $media->method('getItemCount')->willReturn(0);
+    $media->method('import')->willThrowException(new \RuntimeException('network down'));
+
+    // The only channel->set in postProcess is the last-imported timestamp; on
+    // an errored import it must not be written (nor saved).
+    $channel = $this->createMock(TermInterface::class);
+    $channel->method('id')->willReturn(self::CHANNEL_ID);
+    $channel->method('label')->willReturn('Test Channel');
+    $channel->expects($this->never())->method('set');
+    $channel->expects($this->never())->method('save');
+
+    $orchestrator = $this->orchestrator($media, $this->feed(self::NODE_FEED_ID), [], [], $this->createMock(LoggerInterface::class), $channel);
+    $report = $orchestrator->import($channel);
+
+    $this->assertSame('network down', $report['media']['error']);
+  }
+
+  /**
    * Builds a minimal Feeds feed mock with an ID and item count.
    */
   private function feed(int $id, int $count = 15): FeedInterface {
@@ -185,7 +251,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
    * the given feed mocks; the node query/loadMultiple return the given stamp
    * targets — so import() drives the real orchestration logic end to end.
    */
-  private function orchestrator(FeedInterface $media, FeedInterface $videos, array $node_ids, array $nodes, LoggerInterface $logger, TermInterface $channel): EmpireImportOrchestrator {
+  private function orchestrator(FeedInterface $media, FeedInterface $videos, array $node_ids, array $nodes, LoggerInterface $logger, TermInterface $channel, ?LockBackendInterface $lock = NULL): EmpireImportOrchestrator {
     $feed_storage = $this->createMock(EntityStorageInterface::class);
     $feed_storage->method('load')->willReturnMap([
       [self::MEDIA_FEED_ID, $media],
@@ -217,7 +283,11 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
 
     $feed_instance_manager = new FeedInstanceManager($entity_type_manager, $state);
     $thumbnail_upgrader = $this->createMock(ThumbnailUpgrader::class);
-    return new EmpireImportOrchestrator($entity_type_manager, $feed_instance_manager, $thumbnail_upgrader, $time, $logger);
+    if ($lock === NULL) {
+      $lock = $this->createMock(LockBackendInterface::class);
+      $lock->method('acquire')->willReturn(TRUE);
+    }
+    return new EmpireImportOrchestrator($entity_type_manager, $feed_instance_manager, $thumbnail_upgrader, $time, $logger, $lock);
   }
 
 }
