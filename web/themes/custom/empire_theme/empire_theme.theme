@@ -115,6 +115,23 @@ function empire_theme_preprocess_page(array &$variables): void {
       $variables['empire_page_title'] = $node->label();
     }
   }
+  elseif ($variables['is_front'] ?? FALSE) {
+    // The homepage h1 is normally the cinematic hero. On a brand-new site with
+    // no videos the hero is empty, so give the empty homepage a page-head h1
+    // and flag it for CSS (which hides the orphaned section headings).
+    $has_video = (bool) \Drupal::entityTypeManager()->getStorage('node')
+      ->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', 'empire_video')
+      ->condition('status', 1)
+      ->range(0, 1)
+      ->execute();
+    if (!$has_video) {
+      $variables['empire_page_title'] = t('No videos yet');
+      $variables['empire_home_empty'] = TRUE;
+      $variables['#cache']['tags'][] = 'node_list:empire_video';
+    }
+  }
 }
 
 /**

@@ -49,7 +49,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'No videos yet. Connect a YouTube channel from the Empire dashboard to get started.'
+          content: 'Connect a YouTube channel from the Empire dashboard to get started.'
           tokenize: false
       sorts:
         field_source_published_value:

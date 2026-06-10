@@ -333,16 +333,11 @@ main { width: 100%; }
 .empire-error__body { color: rgba(255, 255, 255, .72); margin: 0 0 28px; }
 .empire-error__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
-/* ---- Respect prefers-reduced-motion ----
- * Cards lift/scale on hover and the hero fades in over 0.8s; for visitors who
- * ask for reduced motion, near-instant everything (and disable smooth scroll). */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* ---- Empty homepage (brand-new site, no videos yet) ----
+ * The homepage is composed for the populated state (hero + section headings +
+ * Views rows). Before any videos exist the hero and rows are empty, which would
+ * leave orphaned "Latest videos" / "Browse by collection" headings. The
+ * preprocess gives the page a head h1 + this class; hide those headings so the
+ * empty state reads as a clean page-head + message + the newsletter/contact
+ * cards. (The reduced-motion override lives once, near the top of this file.) */
+.empire-home-empty .empire-heading:not(.empire-section *) { display: none; }

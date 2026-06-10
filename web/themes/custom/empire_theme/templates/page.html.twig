@@ -45,7 +45,7 @@
   </div>
 </header>
 
-<main id="main-content" class="empire-main{{ is_front ? ' is-front' : '' }}">
+<main id="main-content" class="empire-main{{ is_front ? ' is-front' : '' }}{{ empire_home_empty ? ' empire-home-empty' : '' }}">
   {% if empire_page_title %}
     <div class="page-head">
       <h1 class="page-title">{{ empire_page_title }}</h1>
