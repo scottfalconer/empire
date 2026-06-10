@@ -15,6 +15,7 @@ use Drupal\taxonomy\TermInterface;
 use Drupal\Tests\UnitTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests the "Refresh now" form.
@@ -94,11 +95,39 @@ final class RefreshFormTest extends UnitTestCase {
   }
 
   /**
+   * A thrown exception from import() is caught: error + redirect, no WSOD.
+   *
+   * The orchestrator's import() re-provisions feeds via getFeeds(), which can
+   * throw EntityStorageException; RefreshForm must guard it the way SetupForm
+   * already guards onboarding (review finding R4).
+   */
+  public function testSubmitGuardsAgainstThrowingImport(): void {
+    $orchestrator = $this->createMock(EmpireImportOrchestratorInterface::class);
+    $orchestrator->method('import')
+      ->willThrowException(new \RuntimeException('storage boom'));
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addError');
+    $messenger->expects($this->never())->method('addStatus');
+    $messenger->expects($this->never())->method('addWarning');
+    $logger = $this->createMock(LoggerInterface::class);
+    $logger->expects($this->once())->method('error');
+
+    $form = $this->form([$this->channel()], $orchestrator, $logger);
+    $form->setMessenger($messenger);
+    $build = [];
+    $form_state = new FormState();
+    // Must not throw — the guard catches it and lands on the dashboard.
+    $form->submitForm($build, $form_state);
+    $this->assertSame('empire_tools.dashboard', $form_state->getRedirect()->getRouteName());
+  }
+
+  /**
    * Builds a RefreshForm whose setup status returns the given channels.
    */
   private function form(
     array $channels,
     ?EmpireImportOrchestratorInterface $orchestrator = NULL,
+    ?LoggerInterface $logger = NULL,
   ): RefreshForm {
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('loadByProperties')->willReturn($channels);
@@ -107,6 +136,7 @@ final class RefreshFormTest extends UnitTestCase {
     $form = new RefreshForm(
       new EmpireSetupStatus($etm),
       $orchestrator ?? $this->createMock(EmpireImportOrchestratorInterface::class),
+      $logger ?? $this->createMock(LoggerInterface::class),
     );
     $form->setStringTranslation($this->getStringTranslationStub());
     return $form;

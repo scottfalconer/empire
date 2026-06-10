@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\empire_tools\Service\EmpireImportOrchestratorInterface;
 use Drupal\empire_tools\Service\EmpireSetupStatus;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,6 +20,7 @@ final class RefreshForm extends FormBase {
   public function __construct(
     private readonly EmpireSetupStatus $setupStatus,
     private readonly EmpireImportOrchestratorInterface $orchestrator,
+    private readonly LoggerInterface $logger,
   ) {}
 
   /**
@@ -28,6 +30,7 @@ final class RefreshForm extends FormBase {
     return new static(
       $container->get('empire_tools.setup_status'),
       $container->get('empire_tools.import_orchestrator'),
+      $container->get('logger.channel.empire_tools'),
     );
   }
 
@@ -75,7 +78,21 @@ final class RefreshForm extends FormBase {
     if ($channel === NULL) {
       return;
     }
-    $report = $this->orchestrator->import($channel);
+    // Re-provisioning feeds (getFeeds() inside import()) saves entities and can
+    // throw on a storage/validation error; a refresh must not white-screen the
+    // dashboard the way SetupForm already guards onboarding.
+    try {
+      $report = $this->orchestrator->import($channel);
+    }
+    catch (\Throwable $e) {
+      $this->logger->error('Empire refresh failed for @channel: @msg', [
+        '@channel' => $channel->label(),
+        '@msg' => $e->getMessage(),
+      ]);
+      $this->messenger()->addError($this->t('Something went wrong while refreshing. Please try again in a moment.'));
+      $form_state->setRedirect('empire_tools.dashboard');
+      return;
+    }
     if ($report['media']['error'] || $report['videos']['error']) {
       $this->messenger()->addWarning($this->t('Refresh could not reach YouTube right now. Please try again shortly.'));
     }
