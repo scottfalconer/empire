@@ -1,0 +1,47 @@
+name: CI
+
+# Fast, dependency-light gates that need no database or full Drupal site:
+# Composer manifest validation + Drupal/DrupalPractice coding standards.
+# The heavier checks (PHPStan, PHPUnit, a clean recipe apply, and the
+# feeds/rendering/accessibility review) need a complete Drupal CMS site with the
+# recipe's contrib dependencies and remain the manual release gate documented in
+# recipes/empire/docs/validation.md.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: composer-validate + phpcs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Validate composer manifests
+        run: |
+          for pkg in recipes/empire web/modules/custom/empire_tools web/themes/custom/empire_theme; do
+            echo "::group::$pkg/composer.json"
+            composer validate --no-check-publish "$pkg/composer.json"
+            echo "::endgroup::"
+          done
+
+      - name: Install PHP_CodeSniffer + Drupal coder
+        run: |
+          composer init --no-interaction --name=empire/ci
+          composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer require --dev --no-interaction --no-progress "drupal/coder:^8.3"
+
+      - name: PHPCS (Drupal + DrupalPractice)
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist

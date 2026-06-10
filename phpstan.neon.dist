@@ -1,0 +1,12 @@
+# PHPStan config for the Empire custom packages (module + theme).
+# Drupal-aware analysis (mglaman/phpstan-drupal) + @deprecated API detection
+# (phpstan-deprecation-rules) — the modern equivalent of drupal-check.
+# Run: ddev exec "vendor/bin/phpstan analyse --no-progress"
+# (phpstan/extension-installer auto-includes phpstan-drupal + deprecation-rules.)
+parameters:
+  level: 5
+  paths:
+    - web/modules/custom/empire_tools
+    - web/themes/custom/empire_theme
+  excludePaths:
+    - web/themes/custom/empire_theme/fonts/*

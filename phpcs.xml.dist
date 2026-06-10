@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Empire">
+  <description>Drupal + DrupalPractice coding standards for the Empire packages.</description>
+
+  <!-- Run: ddev exec "vendor/bin/phpcs" (uses this config; -p for progress). -->
+  <arg name="extensions" value="php,module,inc,install,theme,yml,twig,css"/>
+  <arg name="colors"/>
+  <arg value="sp"/>
+
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+
+  <file>web/modules/custom/empire_tools</file>
+  <file>web/themes/custom/empire_theme</file>
+
+  <!-- Binary font assets are not lintable source. -->
+  <exclude-pattern>*/fonts/*</exclude-pattern>
+</ruleset>

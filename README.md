@@ -1,5 +1,7 @@
 # Empire — a Drupal CMS site template for video creators
 
+[![CI](https://github.com/scottfalconer/empire/actions/workflows/ci.yml/badge.svg)](https://github.com/scottfalconer/empire/actions/workflows/ci.yml)
+
 Turn a YouTube channel into a cinematic, Netflix-style streaming site. Paste a
 channel and Empire imports the recent videos, builds a cinematic homepage,
 organises collections, and gives you editable video pages — **no YouTube API key
@@ -50,6 +52,14 @@ Starting from a Drupal CMS site:
   stored locally (no third-party hotlinking).
 - Built to **WCAG AA**, with rich SEO (meta description, Open Graph, Twitter
   cards, JSON-LD `VideoObject`) out of the box.
+
+## Continuous integration
+
+CI runs `composer validate` and PHPCS (Drupal + DrupalPractice coding standards)
+on every push and pull request. The heavier gates — PHPStan, PHPUnit, a
+clean-slate recipe apply, and the feeds / rendering / accessibility review — need
+a full Drupal CMS site with the recipe's contrib dependencies, and stay the
+manual release checklist in [`recipes/empire/docs/validation.md`](recipes/empire/docs/validation.md).
 
 ## License
 
