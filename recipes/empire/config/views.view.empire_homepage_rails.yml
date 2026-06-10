@@ -47,9 +47,10 @@ display:
           label: ''
           view_mode: card
       pager:
-        type: none
+        type: some
         options:
           offset: 0
+          items_per_page: 72
       exposed_form:
         type: basic
         options: {  }
