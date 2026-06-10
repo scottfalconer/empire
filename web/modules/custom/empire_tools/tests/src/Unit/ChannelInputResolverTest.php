@@ -130,6 +130,24 @@ final class ChannelInputResolverTest extends UnitTestCase {
   }
 
   /**
+   * An offline-resolved id still fetches the channel name from og:title.
+   *
+   * A bare id / channel URL / feed URL carries the id but no name, so resolve()
+   * fetches the (allow-listed) channel page to recover the real display name
+   * rather than falling back to "YouTube channel UC…".
+   */
+  public function testResolveDirectInputFetchesLabel(): void {
+    $client = $this->createMock(ClientInterface::class);
+    $client->expects($this->once())
+      ->method('request')
+      ->with('GET', 'https://www.youtube.com/channel/' . self::ID, $this->anything())
+      ->willReturn(new Response(200, [], '<meta property="og:title" content="Tom Scott">'));
+    $info = $this->resolver($client)->resolve(self::ID);
+    $this->assertSame(self::ID, $info['channel_id']);
+    $this->assertSame('Tom Scott', $info['label']);
+  }
+
+  /**
    * Never fetches for non-YouTube input (SSRF guard).
    */
   public function testResolveRejectsNonYouTube(): void {

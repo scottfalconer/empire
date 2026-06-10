@@ -18,8 +18,9 @@ use Psr\Log\LoggerInterface;
  *  - never hard-crashes setup: on any failure it returns NULL and the caller
  *    shows a plain-language error.
  *
- * Accepts: UC… IDs, channel URLs, feed URLs (parsed offline) and @handles /
- * legacy /c/ and /user/ URLs (resolved with one HTTP GET).
+ * Accepts: UC… IDs, channel URLs, feed URLs (ID parsed offline) and @handles /
+ * legacy /c/ and /user/ URLs (resolved with one HTTP GET). In every case the
+ * channel's display name is fetched from its og:title when not already known.
  */
 final class ChannelInputResolver {
 
@@ -81,6 +82,16 @@ final class ChannelInputResolver {
     if ($channel_id === NULL) {
       return NULL;
     }
+
+    // 3. We have an ID but no human name yet (the input was a bare ID / channel
+    // URL / feed URL, all parsed offline — or the handle fetch found the ID but
+    // not the title). Fetch the channel page's og:title so the stored label is
+    // the real channel name, not "YouTube channel UC…". Best-effort: a failed
+    // fetch just leaves the fallback name, so setup still works.
+    if ($label === NULL) {
+      [, $label] = $this->resolveByFetch('https://www.youtube.com/channel/' . $channel_id);
+    }
+
     return $this->buildInfo($channel_id, $label);
   }
 
@@ -211,7 +222,13 @@ final class ChannelInputResolver {
       $html = '';
       $body = $response->getBody();
       while (!$body->eof()) {
-        $html .= $body->read(65536);
+        $chunk = $body->read(65536);
+        // A real stream returns '' only at EOF; stop rather than spin on a
+        // stream that yields nothing yet never reports EOF.
+        if ($chunk === '') {
+          break;
+        }
+        $html .= $chunk;
         if (strlen($html) > self::MAX_BODY_BYTES) {
           break;
         }
