@@ -21,3 +21,21 @@ empire_tools.refresh:
     _title: 'Refresh your imports'
   requirements:
     _permission: 'refresh empire imports'
+
+empire_tools.error_404:
+  path: '/empire/page-not-found'
+  defaults:
+    _controller: '\Drupal\empire_tools\Controller\ErrorPageController::page404'
+    _title: 'Page not found'
+  requirements:
+    # Public by design — the branded 404 must render for anyone, incl. anon.
+    _access: 'TRUE'
+
+empire_tools.error_403:
+  path: '/empire/access-denied'
+  defaults:
+    _controller: '\Drupal\empire_tools\Controller\ErrorPageController::page403'
+    _title: 'Access denied'
+  requirements:
+    # Public by design — the branded 403 must render for anyone, incl. anon.
+    _access: 'TRUE'

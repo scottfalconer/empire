@@ -17,6 +17,11 @@ props:
       type: string
       title: Aspect ratio
       enum: ["16:9", "4:3", "1:1", "auto"]
+      "meta:enum":
+        "16:9": "Widescreen (16:9)"
+        "4:3": "Standard (4:3)"
+        "1:1": "Square (1:1)"
+        auto: Auto
       default: "16:9"
     caption:
       type: string

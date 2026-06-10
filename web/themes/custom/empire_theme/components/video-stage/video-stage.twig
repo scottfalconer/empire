@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Empire video stage — the watch-page player area.
+ *
+ * Poster (still, decorative) + the consent-gated player passed IN as the `player`
+ * slot, so the Klaro consent gating on the field render is preserved
+ * unchanged. When the editor marks the video unavailable, the player is replaced
+ * by a clear notice over the poster instead.
+ */
+#}
+<div{{ attributes.addClass('empire-watch__stage') }}>
+  {% if poster %}
+    <img class="empire-watch__poster" src="{{ poster }}" alt="" aria-hidden="true" loading="lazy">
+  {% endif %}
+  {% if unavailable %}
+    <div class="empire-watch__unavailable">
+      <p>{{ 'This video is currently unavailable. It may have been removed or made private on YouTube.'|t }}</p>
+    </div>
+  {% else %}
+    {% block player %}{% endblock %}
+  {% endif %}
+</div>

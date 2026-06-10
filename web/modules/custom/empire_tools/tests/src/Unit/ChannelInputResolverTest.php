@@ -73,6 +73,11 @@ final class ChannelInputResolverTest extends UnitTestCase {
     $this->assertNull($r->buildResolvableUrl('https://evil.example.com/@mkbhd'));
     $this->assertNull($r->buildResolvableUrl('https://youtube.evil.com/@mkbhd'));
     $this->assertNull($r->buildResolvableUrl('plain words'));
+    // Tightened bare-handle shape: too-short or purely-numeric tokens are not
+    // coined into a YouTube URL; a valid in-range handle still is.
+    $this->assertNull($r->buildResolvableUrl('ab'));
+    $this->assertNull($r->buildResolvableUrl('12345'));
+    $this->assertSame('https://www.youtube.com/@abc', $r->buildResolvableUrl('abc'));
   }
 
   /**
@@ -158,7 +163,7 @@ final class ChannelInputResolverTest extends UnitTestCase {
   }
 
   /**
-   * Returns NULL instead of throwing on a network error (SPEC §6).
+   * Returns NULL instead of throwing on a network error.
    */
   public function testResolveNeverCrashesOnHttpError(): void {
     $client = $this->createMock(ClientInterface::class);

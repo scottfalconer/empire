@@ -7,5 +7,6 @@ dependencies:
   - drupal:node
   - drupal:media
   - drupal:taxonomy
+  - drupal:file
   - feeds:feeds
   - canvas:canvas

@@ -17,6 +17,10 @@ props:
       type: integer
       title: Heading level
       enum: [2, 3, 4]
+      "meta:enum":
+        2: "Heading 2"
+        3: "Heading 3"
+        4: "Heading 4"
       default: 2
     eyebrow:
       type: string

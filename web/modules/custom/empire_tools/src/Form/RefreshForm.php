@@ -7,18 +7,18 @@ namespace Drupal\empire_tools\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\empire_tools\Service\EmpireImportOrchestrator;
+use Drupal\empire_tools\Service\EmpireImportOrchestratorInterface;
 use Drupal\empire_tools\Service\EmpireSetupStatus;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Re-runs the import for the connected channel ("Refresh now", SPEC §11).
+ * Re-runs the import for the connected channel ("Refresh now").
  */
 final class RefreshForm extends FormBase {
 
   public function __construct(
     private readonly EmpireSetupStatus $setupStatus,
-    private readonly EmpireImportOrchestrator $orchestrator,
+    private readonly EmpireImportOrchestratorInterface $orchestrator,
   ) {}
 
   /**

@@ -10,7 +10,7 @@ id: sdc.empire_theme.badge
 source: sdc
 source_local_id: 'empire_theme:badge'
 provider: empire_theme
-active_version: 553bd8c334e95fc3
+active_version: d0d3f2950ba8d847
 versioned_properties:
   active:
     settings:

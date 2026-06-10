@@ -3,7 +3,7 @@
     "type": "drupal-module",
     "description": "Onboarding and setup orchestration for the Empire video site template: channel resolution, feed provisioning, import orchestration, dashboard, and homepage composition.",
     "keywords": ["Drupal", "Empire", "video", "YouTube", "Feeds"],
-    "homepage": "https://www.drupal.org/project/empire_tools",
+    "homepage": "https://github.com/scottfalconer/empire",
     "license": "GPL-2.0-or-later",
     "require": {
         "drupal/core": "^11",

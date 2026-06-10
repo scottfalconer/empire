@@ -5,7 +5,6 @@ global:
       css/tokens.css: {}
       css/base.css: {}
       css/buttons.css: {}
-      css/badges.css: {}
       css/app-shell.css: {}
       css/views.css: {}
       css/grid.css: {}

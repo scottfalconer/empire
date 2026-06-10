@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\empire_tools\EventSubscriber;
 
 use Drupal\Core\Recipe\RecipeAppliedEvent;
-use Drupal\empire_tools\Service\HomepageBuilder;
+use Drupal\empire_tools\Service\HomepageBuilderInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final class RecipeSubscriber implements EventSubscriberInterface {
 
   public function __construct(
-    private readonly HomepageBuilder $homepageBuilder,
+    private readonly HomepageBuilderInterface $homepageBuilder,
   ) {}
 
   /**

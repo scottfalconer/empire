@@ -1,0 +1,27 @@
+{#
+/**
+ * @file
+ * Empire video meta — the watch-page info block beside/below the stage.
+ *
+ * Title + (collection · date) meta, description, a "Watch on YouTube" source
+ * link, and tags. The field renders (collection, description, tags) are passed
+ * in as slots so the node template owns the per-field conditional wrappers.
+ */
+#}
+<div{{ attributes.addClass('empire-watch__info') }}>
+  <h1 class="empire-watch__title">{{ title }}</h1>
+  <div class="empire-watch__meta">
+    {% block collection %}{% endblock %}
+    {% if date %}<span class="empire-watch__date">{{ date }}</span>{% endif %}
+  </div>
+  {% block description %}{% endblock %}
+  {% if source_url %}
+    <div class="empire-watch__source">
+      <a class="btn btn-ghost btn-sm" href="{{ source_url }}" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><path d="M10 14 21 3"/></svg>
+        {{ 'Watch on YouTube'|t }}
+      </a>
+    </div>
+  {% endif %}
+  {% block tags %}{% endblock %}
+</div>

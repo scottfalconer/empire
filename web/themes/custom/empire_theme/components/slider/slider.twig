@@ -1,7 +1,18 @@
-{# Empire slider/rail — horizontal streaming row. Native scroll = keyboard reachable. #}
-<div class="empire-rail">
-  {% if title %}<h3 class="empire-rail__title">{{ title }}</h3>{% endif %}
-  <div class="empire-rail__track" tabindex="0" role="region" aria-label="{{ title|default('Video rail'|t) }}">
+{#
+/**
+ * @file
+ * Empire slider / rail — a horizontal, snap-scrolling streaming row of items.
+ *
+ * Props: title (optional rail heading). Slot: items (the cards).
+ * Native scroll = keyboard reachable; the scroll region is named by its visible
+ * heading (aria-labelledby) rather than a duplicate aria-label, falling back to a
+ * generic label when there is no title.
+ */
+#}
+{% set rail_id = 'empire-rail-' ~ random(100000, 999999) %}
+<div{{ attributes.addClass('empire-rail') }}>
+  {% if title %}<h3 class="empire-rail__title" id="{{ rail_id }}">{{ title }}</h3>{% endif %}
+  <div class="empire-rail__track" tabindex="0" role="region"{% if title %} aria-labelledby="{{ rail_id }}"{% else %} aria-label="{{ 'Video rail'|t }}"{% endif %}>
     {% block items %}{% endblock %}
   </div>
 </div>

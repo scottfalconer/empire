@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - taxonomy.vocabulary.empire_collection
+  module:
+    - taxonomy
+id: empire_collection
+label: 'Empire collection'
+type: 'canonical_entities:taxonomy_term'
+pattern: '/collection/[term:name]'
+selection_criteria:
+  b3d9f1a4-7c2e-4f6b-8a1d-5e9c0f2b3d4e:
+    id: 'entity_bundle:taxonomy_term'
+    negate: false
+    context_mapping:
+      taxonomy_term: taxonomy_term
+    bundles:
+      empire_collection: empire_collection
+selection_logic: and
+weight: -10
+relationships: {  }

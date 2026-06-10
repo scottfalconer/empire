@@ -9,28 +9,35 @@ props:
     title:
       type: string
       title: Title
+      description: "The headline over the hero — usually the featured video's title."
       examples:
         - "The season finale is here"
     description:
       type: string
       title: Description
+      description: "Optional supporting line shown under the title."
       default: ""
     image_src:
       type: string
       title: Backdrop URL
+      description: "Backdrop image URL, usually the featured video's artwork."
     image_alt:
       type: string
       title: Backdrop alt text
+      description: "Leave empty if the backdrop is decorative (the title conveys it)."
       default: ""
     url:
       type: string
       title: Watch link
+      description: "Where the Watch button links — the video's watch page."
       format: uri-reference
     badge:
       type: string
       title: Badge
+      description: "Small label above the title, e.g. Featured."
       default: "Featured"
     cta_label:
       type: string
       title: CTA label
+      description: "Text on the call-to-action button."
       default: "Watch now"

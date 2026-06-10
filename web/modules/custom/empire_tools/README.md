@@ -5,7 +5,7 @@ channel resolution, feed provisioning, import orchestration, the admin
 dashboard, and homepage composition.
 
 Empire Tools is the engine behind the
-[Empire recipe](https://www.drupal.org/project/empire) — normally you apply the
+[Empire recipe](https://github.com/scottfalconer/empire) — normally you apply the
 recipe, which enables this module and the companion `empire_theme`.
 
 ## Requirements
@@ -43,7 +43,7 @@ re-import.
 
 Set a video's **Status** field to *Hidden* to drop it from all listings, or to
 *Unavailable* to replace its player with a clear "currently unavailable" notice
-instead of a broken embed (SPEC §7/§25).
+instead of a broken embed.
 
 ## How it works
 

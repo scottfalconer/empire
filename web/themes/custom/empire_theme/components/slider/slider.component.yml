@@ -2,13 +2,14 @@
 name: Slider
 group: Empire
 status: stable
-description: "A horizontal streaming-style rail of items with snap scrolling. Keyboard scrollable (SPEC §24)."
+description: "A horizontal streaming-style rail of items with snap scrolling. Keyboard scrollable."
 props:
   type: object
   properties:
     title:
       type: string
       title: Title
+      description: "Optional heading shown above the rail (e.g. a collection name)."
       default: ""
 slots:
   items:

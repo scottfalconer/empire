@@ -9,7 +9,7 @@ field_name: field_featured
 entity_type: node
 bundle: empire_video
 label: Featured
-description: ''
+description: 'Turn on to make this the big hero video on your homepage. Only one is featured at a time.'
 required: false
 translatable: true
 default_value: {  }

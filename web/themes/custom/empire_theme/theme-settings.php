@@ -12,7 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
  */
 function empire_theme_form_system_theme_settings_alter(array &$form, FormStateInterface $form_state): void {
   $motion = \Drupal::service('Drupal\Core\Extension\ThemeSettingsProvider')
-    ->getSetting('empire_hero_motion', 'empire_theme') ?: 'poster';
+    ->getSetting('empire_hero_motion', 'empire_theme') ?: 'autoplay';
   $form['empire_hero'] = [
     '#type' => 'details',
     '#title' => t('Featured hero'),
@@ -24,9 +24,9 @@ function empire_theme_form_system_theme_settings_alter(array &$form, FormStateIn
     '#title' => t('Hero motion'),
     '#default_value' => $motion,
     '#options' => [
-      'poster' => t('Still poster (recommended) — the featured artwork; the video loads only on the watch page, after the visitor consents to YouTube.'),
-      'autoplay' => t('Autoplay preview — a muted, looping, chrome-less preview of the featured video plays in the homepage hero.'),
+      'autoplay' => t('Autoplay preview (default) — a muted, looping, chrome-less preview of the featured video plays in the homepage hero, but only after the visitor consents to YouTube.'),
+      'poster' => t('Still poster — the featured artwork only; the video loads on the watch page after the visitor consents to YouTube.'),
     ],
-    '#description' => t('“Autoplay preview” embeds and plays YouTube in the homepage hero <em>before</em> the visitor has consented to it, which diverges from Empire’s privacy-first default (SPEC §19 consent / §24 no-autoplay) and may carry consent/compliance obligations in some regions — enable it only if that is appropriate for your audience. The preview is always muted, looping and chrome-less, respects the visitor’s “reduce motion” setting, and falls back to the still poster wherever playback is blocked.'),
+    '#description' => t('The autoplay preview is consent-gated: it never loads YouTube until the visitor consents (Klaro), so the privacy-first default (no external content before consent) is preserved. It is always muted, looping and chrome-less, respects the visitor’s “reduce motion” setting, and falls back to the still poster wherever playback is blocked or not yet consented.'),
   ];
 }

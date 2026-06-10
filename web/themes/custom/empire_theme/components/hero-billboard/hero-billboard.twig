@@ -5,13 +5,16 @@
  *
  * Props: title, description, image_src, image_alt, url, badge, cta_label.
  * Full-bleed backdrop + left/bottom fades + radial text scrim, content bottom-left.
- * Links to the watch page — still poster by default (no autoplay, SPEC §24). The
+ * Links to the watch page — still poster by default (no autoplay). The
  * optional muted preview (empire_hero_motion setting) is injected into the
  * backdrop by hero-preview.js via the wrapper template, so it stays out of this
  * component's authorable schema.
  */
 #}
-<section class="empire-hero">
+<section{{ attributes.addClass('empire-hero') }}>
+  {# Backdrop is decorative: it's the featured video's artwork behind the title,
+     and the title (h1) + CTA already convey it — so the image stays aria-hidden
+     with empty alt rather than re-announcing the title. #}
   <div class="empire-hero__backdrop" aria-hidden="true">
     {% if image_src %}
       <img class="empire-hero__img" src="{{ image_src }}" alt="" loading="eager">

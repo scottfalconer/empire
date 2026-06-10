@@ -5,12 +5,14 @@
  * Theme hooks for Empire.
  */
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\media\MediaInterface;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\TermInterface;
 
 /**
  * Implements hook_preprocess_HOOK() for the page (app shell chrome).
@@ -34,7 +36,10 @@ function empire_theme_preprocess_page(array &$variables): void {
     $term = $terms ? reset($terms) : NULL;
     if ($term && $term->hasField('field_youtube_channel_url') && !$term->get('field_youtube_channel_url')->isEmpty()) {
       $item = $term->get('field_youtube_channel_url')->first();
-      $variables['empire_subscribe_url'] = $item->uri ?? $item->value ?? '';
+      // Sanitize the stored link URI before it reaches the Subscribe href:
+      // _empire_theme_safe_href() rejects javascript:/data:/protocol-relative
+      // and other non-http(s) URIs (returns '#').
+      $variables['empire_subscribe_url'] = _empire_theme_safe_href((string) ($item->uri ?? ''));
       $variables['empire_channel_label'] = $term->label();
     }
   }
@@ -65,6 +70,11 @@ function empire_theme_preprocess_page(array &$variables): void {
   $variables['empire_url_videos'] = Url::fromUri('internal:/videos')->toString();
   $variables['empire_url_collections'] = Url::fromUri('internal:/collections')->toString();
   $variables['empire_url_contact'] = Url::fromUri('internal:/form/contact-form')->toString();
+  // Static footer pages — resolved through Drupal so they respect the base path
+  // (a subdirectory install) instead of being raw root-relative hrefs.
+  $variables['empire_url_about'] = Url::fromUri('internal:/about')->toString();
+  $variables['empire_url_privacy'] = Url::fromUri('internal:/privacy')->toString();
+  $variables['empire_url_terms'] = Url::fromUri('internal:/terms')->toString();
   $variables['empire_url_dashboard'] = Url::fromUri('internal:/admin/empire')->toString();
 
   // Page header (h1). Home has the hero; /watch carries the node's own h1.
@@ -73,12 +83,18 @@ function empire_theme_preprocess_page(array &$variables): void {
   $variables['empire_page_title'] = '';
   $variables['empire_page_desc'] = '';
   $route_name = \Drupal::routeMatch()->getRouteName();
-  $path = \Drupal::service('path.current')->getPath();
-  if (preg_match('#^/collection/(\d+)$#', $path, $m)
-    && ($term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($m[1]))) {
-    // Collection detail → the collection name + description.
+  // The collection detail page IS the empire_collection term canonical (where
+  // the tiles link); give it the curated page-head h1 + description.
+  $term = $route_name === 'entity.taxonomy_term.canonical'
+    ? \Drupal::routeMatch()->getParameter('taxonomy_term')
+    : NULL;
+  if ($term instanceof TermInterface && $term->bundle() === 'empire_collection') {
     $variables['empire_page_title'] = $term->label();
     $variables['empire_page_desc'] = trim(strip_tags((string) $term->getDescription()));
+    // Bubble the term's cache metadata so editing the collection invalidates
+    // this page's head title/description.
+    $cache = CacheableMetadata::createFromObject($term);
+    $cache->applyTo($variables);
   }
   elseif (in_array($active, ['videos', 'collections'], TRUE) || $route_name === 'entity.webform.canonical') {
     // /videos, /collections → view title; /form/{webform} → the webform label.
@@ -208,7 +224,7 @@ function _empire_theme_youtube_id(NodeInterface $node): string {
  * Implements hook_preprocess_HOOK() for nodes.
  *
  * Builds the `empire_card` variable for empire_video nodes. The display-artwork
- * fallback (SPEC §13) lives here, ONCE: editor artwork → oEmbed thumbnail →
+ * fallback lives here, ONCE: editor artwork → oEmbed thumbnail →
  * placeholder. Templates that render a card consume `empire_card` only.
  */
 function empire_theme_preprocess_node(array &$variables): void {
@@ -267,7 +283,9 @@ function empire_theme_preprocess_node(array &$variables): void {
   }
 
   $url = _empire_theme_safe_href($node->toUrl()->toString());
-  $is_featured = !$node->get('field_featured')->isEmpty() && $node->get('field_featured')->value;
+  $is_featured = $node->hasField('field_featured')
+    && !$node->get('field_featured')->isEmpty()
+    && $node->get('field_featured')->value;
   // "New" badge: published in the last 14 days (yields to the Featured hero).
   $is_new = $published > 0
     && (\Drupal::time()->getRequestTime() - $published) < (14 * 86400);
@@ -296,20 +314,70 @@ function empire_theme_preprocess_node(array &$variables): void {
     'cta_label' => t('Watch now'),
   ];
 
-  // Optional muted autoplay preview (theme setting empire_hero_motion; default
-  // 'poster'). Kept OUT of the hero SDC props (theme-internal data, not an
+  // Muted autoplay preview (theme setting empire_hero_motion; default
+  // 'autoplay'). Kept OUT of the hero SDC props (theme-internal data, not an
   // authorable component prop): hero-preview.js injects the preview into the
-  // backdrop via the wrapper template. When enabled it embeds YouTube before
-  // consent: an owner-enabled divergence from the privacy-first default. Never
-  // for an editor-marked unavailable video. See theme-settings.php.
+  // backdrop via the wrapper template. CONSENT-GATED — the JS only loads
+  // youtube-nocookie after the visitor consents to YouTube via Klaro, so it
+  // never embeds before consent (§19). Never for an editor-marked unavailable
+  // video. See theme-settings.php.
   $variables['empire_hero_video'] = '';
   $motion = \Drupal::service('Drupal\Core\Extension\ThemeSettingsProvider')
-    ->getSetting('empire_hero_motion', 'empire_theme') ?: 'poster';
+    ->getSetting('empire_hero_motion', 'empire_theme') ?: 'autoplay';
   if ($motion === 'autoplay' && empty($variables['empire_unavailable'])) {
     $video_id = _empire_theme_youtube_id($node);
     if ($video_id !== '') {
       $variables['empire_hero_video'] = $video_id;
       $variables['#attached']['library'][] = 'empire_theme/hero-preview';
     }
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ *
+ * Ships a branded SVG favicon (modern browsers prefer it over the generic core
+ * favicon.ico fallback), a theme-color matching the dark UI, and preloads for
+ * the primary self-hosted fonts (faster first paint).
+ */
+function empire_theme_page_attachments_alter(array &$attachments): void {
+  $path = \Drupal::service('extension.list.theme')->getPath('empire_theme');
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'link',
+      '#attributes' => [
+        'rel' => 'icon',
+        'type' => 'image/svg+xml',
+        'href' => '/' . $path . '/favicon.svg',
+      ],
+    ],
+    'empire_favicon_svg',
+  ];
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'meta',
+      '#attributes' => ['name' => 'theme-color', 'content' => '#0b0b0e'],
+    ],
+    'empire_theme_color',
+  ];
+  // Preload the primary (latin) self-hosted fonts so first paint has the body +
+  // display faces. Same-origin, but font fetches use CORS, so the preload needs
+  // crossorigin to match; the latin-ext variants load on demand. No YouTube
+  // preconnect here: thumbnails are local and the player only loads after
+  // consent (§19), so a pre-consent connection would leak intent.
+  foreach (['manrope-latin', 'bricolage-grotesque-latin'] as $i => $font) {
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#tag' => 'link',
+        '#attributes' => [
+          'rel' => 'preload',
+          'href' => '/' . $path . '/fonts/' . $font . '.woff2',
+          'as' => 'font',
+          'type' => 'font/woff2',
+          'crossorigin' => 'anonymous',
+        ],
+      ],
+      'empire_preload_font_' . $i,
+    ];
   }
 }

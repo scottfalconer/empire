@@ -17,10 +17,10 @@ use Psr\Log\LoggerInterface;
  * Media feed first (creates/dedupes Remote Video media), node feed second
  * (creates empire_video nodes + attaches the media). Never bypasses Feeds
  * mapping — it just drives Feeds. Afterwards it stamps the channel reference
- * (SPEC §8/§9) that the syndication parser cannot map, without overwriting
+ * that the syndication parser cannot map, without overwriting
  * editor-curated values.
  */
-final class EmpireImportOrchestrator {
+final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterface {
 
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
@@ -38,6 +38,12 @@ final class EmpireImportOrchestrator {
    *    'videos' => ['count' => int, 'error' => ?string]].
    */
   public function import(TermInterface $channel): array {
+    // The import drives two Feeds imports + a maxres thumbnail fetch per video,
+    // run synchronously from the setup/refresh submit. The work self-bounds via
+    // the feed + per-request HTTP timeouts; lift PHP's max_execution_time so a
+    // slow channel does not hit a mid-import timeout (the synchronous design is
+    // accepted — a batch is a possible future enhancement).
+    @set_time_limit(0);
     $feeds = $this->feedInstanceManager->getFeeds($channel);
 
     $report = [
@@ -45,21 +51,32 @@ final class EmpireImportOrchestrator {
       'videos' => $this->runImport($feeds['videos']),
     ];
 
-    // Post-import stamping is best-effort: a storage/validation error here must
-    // not white-screen setup/refresh — the import itself has already run.
+    $this->postProcess($channel, (int) $feeds['videos']->id());
+
+    return $report;
+  }
+
+  /**
+   * Stamps the channel, ensures a hero, and upgrades thumbnails post-import.
+   *
+   * Best-effort: a storage/validation error here must not white-screen
+   * setup/refresh — the import itself has already run. Idempotent (fills-only,
+   * features-only-if-none, skips already-hi-res), so it is safe after every
+   * import — wizard, refresh, or the hourly cron run (empire_tools_cron) — so
+   * cron-imported videos get stamped + upgraded too.
+   */
+  public function postProcess(TermInterface $channel, int $node_feed_id): void {
     try {
-      $this->stampChannel($channel, (int) $feeds['videos']->id());
+      $this->stampChannel($channel, $node_feed_id);
       $channel->set('field_last_imported_at', $this->time->getRequestTime())->save();
       $this->ensureFeaturedVideo();
-      $this->upgradeThumbnails((int) $feeds['videos']->id());
+      $this->upgradeThumbnails($node_feed_id);
     }
     catch (\Throwable $e) {
       $this->logger->error('Empire post-import stamping failed: @msg', [
         '@msg' => $e->getMessage(),
       ]);
     }
-
-    return $report;
   }
 
   /**

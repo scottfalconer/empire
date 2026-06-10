@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
  * wants better. maxresdefault (1280x720, true 16:9) is available at a
  * predictable i.ytimg.com URL keyed by the video ID. We download it LOCALLY
  * (never hotlink) so the site stays consent-clean — no third-party image
- * requests in the browser (SPEC §19) — and fall back to the existing thumbnail
+ * requests in the browser — and fall back to the existing thumbnail
  * for older videos that 404 on maxres. Idempotent: skips already hi-res media.
  */
 class ThumbnailUpgrader {
@@ -58,24 +58,9 @@ class ThumbnailUpgrader {
       }
     }
 
-    // Fetch maxresdefault; older videos 404 — keep the existing thumbnail.
-    $data = '';
-    try {
-      $response = $this->httpClient->request('GET', 'https://i.ytimg.com/vi/' . $video_id . '/maxresdefault.jpg', [
-        'timeout' => 10,
-        'http_errors' => FALSE,
-      ]);
-      if ($response->getStatusCode() === 200) {
-        $data = (string) $response->getBody();
-      }
-    }
-    catch (\Throwable $e) {
-      $this->logger->warning('Thumbnail upgrade fetch failed for @id: @msg', [
-        '@id' => $video_id,
-        '@msg' => $e->getMessage(),
-      ]);
-      return FALSE;
-    }
+    // Fetch + validate the maxres image (older videos 404 — keep the existing
+    // thumbnail). Empty string means unavailable or not a valid hi-res JPEG.
+    $data = $this->fetchMaxres($video_id);
     if ($data === '') {
       return FALSE;
     }
@@ -100,6 +85,64 @@ class ThumbnailUpgrader {
     $media->set('thumbnail', ['target_id' => $file->id(), 'alt' => $alt]);
     $media->save();
     return TRUE;
+  }
+
+  /**
+   * Fetches and validates the maxres thumbnail bytes for a video ID.
+   *
+   * Hardened against a hostile/compromised/on-path upstream: the i.ytimg.com
+   * URL is canonical so redirects are refused, an image content-type is
+   * required, the streamed body is capped (no memory / zip-bomb exhaustion),
+   * and the bytes are validated as a real hi-res JPEG before being returned.
+   *
+   * @param string $video_id
+   *   The 11-character YouTube video ID.
+   *
+   * @return string
+   *   The validated JPEG bytes, or '' if unavailable / not a valid hi-res JPEG.
+   */
+  protected function fetchMaxres(string $video_id): string {
+    $data = '';
+    $max_bytes = 5 * 1024 * 1024;
+    try {
+      $response = $this->httpClient->request('GET', 'https://i.ytimg.com/vi/' . $video_id . '/maxresdefault.jpg', [
+        'timeout' => 10,
+        'http_errors' => FALSE,
+        'allow_redirects' => FALSE,
+        'stream' => TRUE,
+      ]);
+      $type = $response->getHeaderLine('Content-Type');
+      if ($response->getStatusCode() === 200 && ($type === '' || stripos($type, 'image/') === 0)) {
+        $body = $response->getBody();
+        while (!$body->eof()) {
+          $data .= $body->read(65536);
+          if (strlen($data) > $max_bytes) {
+            $this->logger->warning('Thumbnail upgrade for @id exceeded the size cap; skipped.', ['@id' => $video_id]);
+            return '';
+          }
+        }
+      }
+    }
+    catch (\Throwable $e) {
+      $this->logger->warning('Thumbnail upgrade fetch failed for @id: @msg', [
+        '@id' => $video_id,
+        '@msg' => $e->getMessage(),
+      ]);
+      return '';
+    }
+    if ($data === '') {
+      return '';
+    }
+
+    // A 200 body could be an HTML interstitial or a tiny placeholder, not the
+    // real image — require a JPEG of plausible resolution.
+    $info = @getimagesizefromstring($data);
+    if ($info === FALSE || $info[2] !== IMAGETYPE_JPEG || $info[0] < 1000) {
+      $this->logger->warning('Thumbnail upgrade for @id was not a valid hi-res JPEG; skipped.', ['@id' => $video_id]);
+      return '';
+    }
+
+    return $data;
   }
 
 }

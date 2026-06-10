@@ -151,4 +151,39 @@ display:
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
+  feed_videos:
+    id: feed_videos
+    display_title: 'RSS feed'
+    display_plugin: feed
+    position: 2
+    display_options:
+      pager:
+        type: some
+        options:
+          offset: 0
+          items_per_page: 20
+      style:
+        type: rss
+        options:
+          grouping: {  }
+          uses_fields: false
+          description: 'The latest videos.'
+      row:
+        type: node_rss
+        options:
+          relationship: none
+          view_mode: rss
+      display_extenders: {  }
+      path: videos/feed
+      sitename_title: true
+      displays:
+        page_videos: page_videos
+        default: ''
+    cache_metadata:
+      max-age: -1
+      contexts:
+        - 'languages:language_interface'
+        - 'user.node_grants:view'
+        - user.permissions
+      tags: {  }
 

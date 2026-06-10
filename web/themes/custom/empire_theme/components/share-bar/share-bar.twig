@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * Empire share bar — copy link / native share / X / Facebook / WhatsApp.
+ *
+ * Consent-clean: plain share-intent links + the Web Share API, no third-party
+ * scripts and nothing loads until the visitor clicks. JS-enhanced: hidden until
+ * share-bar.js wires the URLs from the current page, so no broken links without
+ * JS (the "Watch on YouTube" source link is the no-JS path).
+ */
+#}
+<div{{ (attributes ?? create_attribute()).addClass('empire-share') }} data-empire-share data-share-title="{{ title }}" hidden>
+  <span class="empire-share__label">{{ 'Share'|t }}</span>
+  <button type="button" class="btn btn-ghost btn-sm" data-share-native hidden>{{ 'Share…'|t }}</button>
+  <button type="button" class="btn btn-ghost btn-sm" data-share-copy>{{ 'Copy link'|t }}</button>
+  <a class="btn btn-ghost btn-sm" data-share-x href="#" target="_blank" rel="noopener noreferrer">X</a>
+  <a class="btn btn-ghost btn-sm" data-share-fb href="#" target="_blank" rel="noopener noreferrer">Facebook</a>
+  <a class="btn btn-ghost btn-sm" data-share-wa href="#" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+</div>

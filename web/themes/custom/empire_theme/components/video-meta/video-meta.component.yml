@@ -1,0 +1,24 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Video meta
+group: Empire
+status: stable
+description: "Watch-page info block: title, collection + date meta, description, the source link, and tags."
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+    date:
+      type: string
+      title: Published date
+    source_url:
+      type: string
+      title: Source URL
+slots:
+  collection:
+    title: Collection
+  description:
+    title: Description
+  tags:
+    title: Tags

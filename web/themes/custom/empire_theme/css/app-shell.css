@@ -50,7 +50,11 @@
 
 /* Collapse wrapper: desktop = inline flex row; mobile = dropdown panel. */
 .nav-collapse { flex: 1; display: flex; align-items: center; gap: 26px; }
-.nav-toggle { display: none; margin-left: auto; width: 44px; height: 44px; }
+.nav-toggle { display: none; place-items: center; margin-left: auto; width: 44px; height: 44px; }
+/* Stack open/close icons in one grid cell + size them for the 44px tap target
+   (overrides the 20px .btn-icon svg) so the hamburger is centered, not corner-pinned. */
+.nav-toggle__open, .nav-toggle__close { grid-area: 1 / 1; }
+.nav-toggle svg { width: 22px; height: 22px; }
 .nav-toggle__close { display: none; }
 
 @media (max-width: 720px) {

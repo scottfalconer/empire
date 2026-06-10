@@ -1,0 +1,19 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Video stage
+group: Empire
+status: stable
+description: "Watch-page video stage: a poster plus the consent-gated player (passed in as a slot), or an unavailable notice."
+props:
+  type: object
+  properties:
+    poster:
+      type: string
+      title: Poster image URL
+    unavailable:
+      type: boolean
+      title: Unavailable
+      examples:
+        - false
+slots:
+  player:
+    title: Player

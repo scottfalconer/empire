@@ -11,7 +11,7 @@ id: empire_newsletter
 title: 'Newsletter signup'
 description: 'Audience capture for the Empire video site.'
 categories: {  }
-elements: "intro:\n  '#type': processed_text\n  '#text': 'Get new videos in your inbox. No spam, unsubscribe anytime.'\n  '#format': plain_text\nemail:\n  '#type': email\n  '#title': 'Email address'\n  '#required': true\n  '#placeholder': you@example.com\n  '#autocomplete': email\nactions:\n  '#type': webform_actions\n  '#submit__label': Subscribe"
+elements: "intro:\n  '#type': processed_text\n  '#text': 'Get new videos in your inbox. No spam, unsubscribe anytime.'\n  '#format': plain_text\nemail:\n  '#type': email\n  '#title': 'Email address'\n  '#required': true\n  '#placeholder': you@example.com\n  '#autocomplete': email\nconsent:\n  '#type': checkbox\n  '#title': 'I agree to receive email updates and accept the privacy policy.'\n  '#required': true\nactions:\n  '#type': webform_actions\n  '#submit__label': 'Sign up'"
 css: ''
 javascript: ''
 settings:

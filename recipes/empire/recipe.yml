@@ -2,7 +2,7 @@ name: Empire
 description: 'Paste your YouTube channel. Empire builds your video site. Turns a YouTube channel into a streaming-style video site using Feeds ingestion, Remote Video media, and editorial empire_video nodes.'
 type: Site
 recipes:
-  # The Drupal CMS "Blank" baseline (SPEC §4) — admin UI, authentication, media
+  # The Drupal CMS "Blank" baseline — admin UI, authentication, media
   # (incl. the remote_video media type Empire imports into), privacy/consent
   # (§19), SEO, and HTML email. Empire is a Site template built ON this
   # foundation; composing it here makes the recipe self-contained, so a
@@ -15,7 +15,7 @@ recipes:
   # field_content body field + format, field_tags + the tags vocabulary, the
   # content_editor role, and pathauto. (Not pulled in by the baseline above.)
   - drupal_cms_content_type_base
-  # Contact form + webform tooling + anti-spam (SPEC §17).
+  # Contact form + webform tooling + anti-spam.
   - drupal_cms_forms
 install:
   # Core Help, so editors can reach the Empire guidance at Admin → Help (hook_help).
@@ -38,3 +38,36 @@ config:
         - 'create empire_video content'
         - 'edit any empire_video content'
         - 'delete any empire_video content'
+    # Branded 404/403 pages (the app shell wraps these routes).
+    system.site:
+      simpleConfigUpdate:
+        page.404: '/empire/page-not-found'
+        page.403: '/empire/access-denied'
+    # The empire_collection term canonical IS the collection page. Empire's only
+    # public term pages are collections, so tune the core taxonomy_term view:
+    # drop the header (the page-head h1 names it — no redundant self-tile),
+    # exclude hidden videos, and add the §25 empty-collection state.
+    views.view.taxonomy_term:
+      simpleConfigUpdate:
+        'display.default.display_options.header': {  }
+        'display.default.display_options.filters.field_source_status_value':
+          id: field_source_status_value
+          table: node__field_source_status
+          field: field_source_status_value
+          entity_type: node
+          entity_field: field_source_status
+          plugin_id: list_field
+          operator: not
+          value:
+            hidden: hidden
+        'display.default.display_options.empty.area_text_custom':
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: true
+          content: 'No videos in this collection yet. Add videos to this collection to see them here.'
+          tokenize: false

@@ -19,9 +19,20 @@ props:
       type: string
       title: Style
       enum: [primary, secondary, ghost, accent, light, outline]
+      "meta:enum":
+        primary: Primary
+        secondary: Secondary
+        ghost: Ghost
+        accent: Accent
+        light: Light
+        outline: Outline
       default: primary
     size:
       type: string
       title: Size
       enum: [default, sm, lg]
+      "meta:enum":
+        default: Default
+        sm: Small
+        lg: Large
       default: default

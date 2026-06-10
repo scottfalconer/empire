@@ -1,4 +1,4 @@
 {# Empire grid — responsive grid container. #}
-<div class="empire-grid empire-grid--cols-{{ columns|default('auto') }}">
+<div{{ attributes.addClass('empire-grid', 'empire-grid--cols-' ~ columns|default('auto')) }}>
   {% block items %}{% endblock %}
 </div>

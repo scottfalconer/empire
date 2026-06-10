@@ -14,10 +14,10 @@ use Psr\Log\LoggerInterface;
  * The Drupal CMS baseline ships an empty "Home" canvas page and sets it as the
  * front page. Core's recipe content importer uses Existing::Skip, so the empire
  * recipe cannot populate that page via content. Instead this runs after the
- * empire recipe applies and composes the page in place (SPEC §14/§16: hero +
+ * empire recipe applies and composes the page in place (hero +
  * rows, via Views blocks + SDC — no hardcoded markup).
  */
-final class HomepageBuilder {
+final class HomepageBuilder implements HomepageBuilderInterface {
 
   /**
    * The baseline "Home" canvas page UUID (drupal_cms_site_template_base).
@@ -92,7 +92,7 @@ final class HomepageBuilder {
         $this->heading('Browse by collection'),
         $this->block('empire_homepage_rails-block_rails'),
       ],
-      $this->cta('Newsletter', 'Never miss a video', 'Subscribe', '/form/empire-newsletter'),
+      $this->cta('Newsletter', 'Never miss a video', 'Sign up', '/form/empire-newsletter'),
     );
   }
 
@@ -117,10 +117,13 @@ final class HomepageBuilder {
         $this->block('empire_featured_video-block_featured'),
         $this->heading('Latest videos'),
         $this->block('empire_latest_videos-block_latest'),
+        // Own heading so the collection rails are their own section, not nested
+        // under "Latest videos" (keeps a clean h1 → h2 → h3 outline).
+        $this->heading('Browse by collection'),
         $this->block('empire_homepage_rails-block_rails'),
       ],
-      // Audience-capture + about CTAs (SPEC §16).
-      $this->cta('Newsletter', 'Never miss a video', 'Subscribe', '/form/empire-newsletter'),
+      // Audience-capture + about CTAs.
+      $this->cta('Newsletter', 'Never miss a video', 'Sign up', '/form/empire-newsletter'),
       $this->cta('Get in touch', 'Questions or collaborations?', 'Contact us', '/form/contact-form'),
     );
   }

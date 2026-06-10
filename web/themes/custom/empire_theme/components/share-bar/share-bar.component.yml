@@ -1,0 +1,13 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Share bar
+group: Empire
+status: stable
+description: "A consent-clean share row (native share / copy link / X / Facebook / WhatsApp). JS-enhanced — links use plain share intents, nothing loads until clicked."
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Share title
+      examples:
+        - "Why trains don't usually crash"

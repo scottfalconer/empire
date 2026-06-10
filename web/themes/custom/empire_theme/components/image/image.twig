@@ -1,5 +1,5 @@
 {# Empire image — responsive, ratio-locked. #}
-<figure class="empire-image empire-image--{{ (ratio|default('16:9'))|replace({':': '-'}) }}">
+<figure{{ attributes.addClass('empire-image', 'empire-image--' ~ (ratio|default('16:9'))|replace({':': '-'})) }}>
   {% if src %}
     <img class="empire-image__img" src="{{ src }}" alt="{{ alt }}" loading="lazy">
   {% endif %}

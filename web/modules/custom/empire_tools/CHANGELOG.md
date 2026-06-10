@@ -10,7 +10,7 @@ Onboarding refresh (Claude Design handoff) — synchronous, no new subsystem.
   site") with a reassurance line and a 3-step "what happens next".
 - A clean first import now redirects straight to the live site (`<front>`) with a
   "Your site is ready" message (the ta-da); partial / no-video / error outcomes
-  still land on the dashboard and warn before celebrating (SPEC §25).
+  still land on the dashboard and warn before celebrating.
 - A coral brand accent on the dashboard "site is live" banner.
 
 ## 1.0.0 — 2026-06-09

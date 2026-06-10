@@ -8,17 +8,25 @@
  * resolved upstream (custom → oEmbed → placeholder) so this component only renders.
  */
 #}
-<article class="empire-card"{{ attributes ?? '' }}>
-  <a class="empire-card__link" href="{{ url|default('#') }}">
+<article{{ (attributes ?? create_attribute()).addClass('empire-card') }}>
+  {# Give the wrapping link a clean accessible name (badge + title) so the date
+     and decorative artwork don't get folded into a noisy link label. #}
+  <a class="empire-card__link" href="{{ url|default('#') }}"{% if title %} aria-label="{{ badge ? badge ~ ': ' ~ title : title }}"{% endif %}>
     <div class="empire-card__media">
       {% if image_src %}
-        <img class="empire-card__img" src="{{ image_src }}" alt="{{ image_alt|default(title) }}" loading="lazy">
+        {# Decorative when the title labels the link (avoids announcing it twice);
+           fall back to a name only when there is no title (SDC-card-8). #}
+        <img class="empire-card__img" src="{{ image_src }}" alt="{{ title ? '' : image_alt|default('Video thumbnail'|t) }}" loading="lazy">
       {% else %}
         <div class="empire-card__img empire-card__img--placeholder" aria-hidden="true">
           <span class="empire-card__placeholder-mark">▶</span>
         </div>
       {% endif %}
-      {% if badge %}<span class="empire-card__badge empire-badge empire-badge--{{ badge == 'New'|t ? 'new' : 'accent' }}">{{ badge }}</span>{% endif %}
+      {% if badge %}
+        {# Compose the badge SDC (single source of truth) inside a positioning
+           wrapper; the "New" upload pill is distinct from the accent default. #}
+        <span class="empire-card__badge">{{ include('empire_theme:badge', { text: badge, variant: ((badge ~ '') == ('New'|t ~ '')) ? 'new' : 'accent' }, with_context=false) }}</span>
+      {% endif %}
     </div>
     <div class="empire-card__body">
       {# Card title is the link's label, not a section heading (avoids heading-order skips). #}

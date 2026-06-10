@@ -8,6 +8,10 @@
   min-height: 540px;
   display: flex;
   align-items: flex-end;
+  /* Clip the 150%-wide text-protection scrim (__inner::before) to the hero —
+     otherwise it overflows the viewport on narrow screens and the page scrolls
+     horizontally (body overflow-x:hidden doesn't catch the <html> scroll). */
+  overflow: hidden;
 }
 .empire-hero__backdrop { position: absolute; inset: 0; overflow: hidden; }
 .empire-hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

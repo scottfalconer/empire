@@ -56,7 +56,9 @@
   background: var(--bg);
   color: var(--text);
   border: 0;
-  box-shadow: inset 0 0 0 1.5px var(--line-2);
+  /* Field outline >= 3:1 vs the dark input bg (WCAG 1.4.11 non-text contrast);
+     brighter than the general --line-2 divider, which is too faint here. */
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .38);
   border-radius: 10px;
   padding: 13px 15px;
   font: inherit;
@@ -78,7 +80,7 @@
 
 /* Fieldsets (e.g. CAPTCHA wrapper) — dark border instead of the browser default. */
 .webform-submission-form fieldset {
-  border: 1px solid var(--line-2);
+  border: 1px solid rgba(255, 255, 255, .38);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 0;
@@ -106,7 +108,8 @@
 .webform-submission-form .webform-button--submit:hover { background: var(--accent-press); }
 .webform-submission-form .form-submit:focus-visible,
 .webform-submission-form .webform-button--submit:focus-visible {
-  outline: 3px solid var(--accent);
+  /* Accent-filled submit: white ring contrasts with the accent fill + dark page. */
+  outline: 3px solid #fff;
   outline-offset: 3px;
 }
 

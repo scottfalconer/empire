@@ -10,7 +10,7 @@ field_name: field_artwork
 entity_type: node
 bundle: empire_video
 label: Artwork
-description: ''
+description: 'Upload a clean poster image to replace the YouTube thumbnail everywhere this video appears.'
 required: false
 translatable: true
 default_value: {  }

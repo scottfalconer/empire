@@ -76,7 +76,7 @@ final class EmpireEditorialTest extends ExistingSiteBase {
     }
     $this->assertNotNull($empty, 'The site has at least one empty collection.');
 
-    $this->drupalGet('/collection/' . $empty);
+    $this->drupalGet($terms->load($empty)->toUrl()->toString());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('No videos in this collection yet');
   }
@@ -106,14 +106,19 @@ final class EmpireEditorialTest extends ExistingSiteBase {
     $this->drupalGet('/videos');
     $this->assertSession()->pageTextContains($title);
 
-    // …and on its assigned collection page.
-    $this->drupalGet('/collection/' . reset($term_ids));
+    // …and on its assigned collection page (term canonical / clean alias).
+    $term = $etm->getStorage('taxonomy_term')->load(reset($term_ids));
+    $this->drupalGet($term->toUrl()->toString());
     $this->assertSession()->pageTextContains($title);
 
-    // …and its own detail page renders.
+    // …and its own detail page renders, carrying the SEO meta the
+    // page_attachments hook stamps (OG + JSON-LD VideoObject).
     $this->drupalGet($node->toUrl()->toString());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains($title);
+    $this->assertSession()->elementAttributeContains(
+      'css', 'meta[property="og:title"]', 'content', $title);
+    $this->assertSession()->responseContains('"@type":"VideoObject"');
   }
 
   /**
@@ -231,7 +236,7 @@ final class EmpireEditorialTest extends ExistingSiteBase {
       'field_source_status' => 'hidden',
     ]);
 
-    $this->drupalGet('/collection/' . $empty);
+    $this->drupalGet($terms->load($empty)->toUrl()->toString());
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('DTT visible vid');
     $this->assertSession()->pageTextNotContains('DTT hidden vid');

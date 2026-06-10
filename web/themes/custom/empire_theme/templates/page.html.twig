@@ -65,10 +65,12 @@
       <a href="{{ path('<front>') }}">{{ 'Home'|t }}</a>
       <a href="{{ empire_url_videos }}">{{ 'Videos'|t }}</a>
       <a href="{{ empire_url_collections }}">{{ 'Collections'|t }}</a>
-      <a href="/about">{{ 'About'|t }}</a>
+      <a href="{{ empire_url_about }}">{{ 'About'|t }}</a>
       <a href="{{ empire_url_contact }}">{{ 'Contact'|t }}</a>
-      <a href="/privacy">{{ 'Privacy'|t }}</a>
-      <a href="/terms">{{ 'Terms'|t }}</a>
+      <a href="{{ empire_url_privacy }}">{{ 'Privacy'|t }}</a>
+      <a href="{{ empire_url_terms }}">{{ 'Terms'|t }}</a>
+      {# Opens the Klaro consent manager (Decline / revoke YouTube + other external content). #}
+      <a href="#" rel="open-consent-manager">{{ 'Privacy settings'|t }}</a>
     </nav>
     {% if empire_subscribe_url %}
       <a class="btn btn-sub btn-sm" href="{{ empire_subscribe_url }}" target="_blank" rel="noopener noreferrer">
@@ -78,10 +80,11 @@
     {% endif %}
   </div>
   <div class="foot-base">
-    <span>{{ empire_site_name }}{% if empire_channel_label %} · {{ 'powered by'|t }} {{ empire_channel_label }}{% endif %}</span>
+    {# Showcase colophon: credit the platform (the site's own name is in .foot-brand above). #}
+    <span>{{ 'powered by'|t }} <a href="https://www.drupal.org" target="_blank" rel="noopener noreferrer">Drupal</a></span>
     <span class="made">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>
-      {{ 'Built with'|t }} <b>Empire</b>
+      {{ 'Built with'|t }} <a href="https://new.drupal.org" target="_blank" rel="noopener noreferrer"><b>Drupal CMS</b></a>
     </span>
   </div>
 </footer>

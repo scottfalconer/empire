@@ -6,10 +6,14 @@
  */
 
 use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\file\FileInterface;
 use Drupal\media\MediaInterface;
 use Drupal\node\NodeInterface;
+use Drupal\views\Plugin\views\query\QueryPluginBase;
+use Drupal\views\Plugin\views\query\Sql;
+use Drupal\views\ViewExecutable;
 
 /**
  * Implements hook_help().
@@ -115,6 +119,19 @@ function empire_tools_page_attachments(array &$attachments): void {
     ],
     'empire_video_schema',
   ];
+
+  // Cache deps for the SEO output: the meta + JSON-LD derive from the node and
+  // its poster media (custom artwork, else the oEmbed playback thumbnail).
+  $cacheability = CacheableMetadata::createFromObject($node);
+  foreach (['field_artwork', 'field_video'] as $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $media = $node->get($field)->entity;
+      if ($media instanceof MediaInterface) {
+        $cacheability->addCacheableDependency($media);
+      }
+    }
+  }
+  $cacheability->applyTo($attachments);
 }
 
 /**
@@ -164,4 +181,70 @@ function _empire_tools_video_poster_url(NodeInterface $node): string {
  */
 function empire_tools_gin_ignore_sticky_form_actions(): array {
   return ['empire_tools_setup'];
+}
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * Hides empty collections from the /collections listing: only collection terms
+ * with at least one published video (via field_collection) are shown — so a
+ * creator never sees an empty "Shorts" tile they didn't fill. Mirrors the
+ * homepage rails, which already only render populated collections.
+ */
+function empire_tools_views_query_alter(ViewExecutable $view, QueryPluginBase $query): void {
+  if ($view->id() !== 'empire_collections' || !$query instanceof Sql) {
+    return;
+  }
+  // Subquery: collection term ids referenced by at least one published video.
+  $populated = \Drupal::database()->select('node__field_collection', 'nfc');
+  $populated->join('node_field_data', 'nfd', 'nfd.nid = nfc.entity_id');
+  $populated->addField('nfc', 'field_collection_target_id');
+  $populated->condition('nfd.status', 1)
+    ->condition('nfd.type', 'empire_video');
+  $query->addWhere('0', 'taxonomy_term_field_data.tid', $populated, 'IN');
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * The Feeds cron import (import_period: 3600) pulls in new uploads but does NOT
+ * run Empire's post-processing (channel stamping, hero, maxres thumbnails) —
+ * that lives in EmpireImportOrchestrator and previously ran only on the
+ * wizard/refresh path. Run it here after each channel's video feed imports,
+ * guarded by the feed's imported timestamp so it only fires when something
+ * actually imported since last time. postProcess() is idempotent, so safe.
+ */
+function empire_tools_cron(): void {
+  try {
+    $channels = \Drupal::entityTypeManager()->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'empire_channel']);
+  }
+  catch (\Throwable $e) {
+    return;
+  }
+  if (!$channels) {
+    return;
+  }
+  /** @var \Drupal\empire_tools\Service\EmpireImportOrchestrator $orchestrator */
+  $orchestrator = \Drupal::service('empire_tools.import_orchestrator');
+  /** @var \Drupal\empire_tools\Service\FeedInstanceManager $feed_manager */
+  $feed_manager = \Drupal::service('empire_tools.feed_instance_manager');
+  $state = \Drupal::state();
+  foreach ($channels as $channel) {
+    try {
+      $feeds = $feed_manager->getFeeds($channel);
+      $imported = $feeds['videos']->getImportedTime();
+      $key = 'empire_tools.cron_postprocess.' . $channel->id();
+      if ($imported > (int) $state->get($key, 0)) {
+        $orchestrator->postProcess($channel, (int) $feeds['videos']->id());
+        $state->set($key, $imported);
+      }
+    }
+    catch (\Throwable $e) {
+      \Drupal::logger('empire_tools')->error('Empire cron post-process failed for @id: @m', [
+        '@id' => $channel->id(),
+        '@m' => $e->getMessage(),
+      ]);
+    }
+  }
 }

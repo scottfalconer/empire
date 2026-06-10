@@ -19,7 +19,7 @@ final class EmpireSetupStatus {
   /**
    * Returns the single connected channel, or NULL before setup.
    *
-   * V1 is single-channel in the UI (SPEC §12); the first channel wins.
+   * V1 is single-channel in the UI; the first channel wins.
    */
   public function getConnectedChannel(): ?TermInterface {
     $channels = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties([

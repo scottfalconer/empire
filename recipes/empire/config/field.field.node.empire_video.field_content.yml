@@ -11,7 +11,7 @@ field_name: field_content
 entity_type: node
 bundle: empire_video
 label: Description
-description: ''
+description: 'Optional description shown on the video page (the YouTube feed does not provide one).'
 required: false
 translatable: true
 default_value: {  }

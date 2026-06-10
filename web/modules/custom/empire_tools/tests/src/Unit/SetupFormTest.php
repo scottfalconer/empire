@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  * The setup wizard provisions entities (the channel term + the two feed
  * instances) synchronously on submit. A storage/validation error there must be
  * caught + logged + surfaced as a plain-language message, never bubble to a
- * white screen (SPEC §6 "never hard-crash setup", §25 error states).
+ * white screen (never hard-crash setup; error states).
  */
 #[CoversClass(SetupForm::class)]
 #[Group('empire_tools')]
@@ -81,8 +81,11 @@ final class SetupFormTest extends UnitTestCase {
     $messenger = $this->createMock(MessengerInterface::class);
     $messenger->expects($this->once())->method('addError');
 
+    // submitForm() now reads the channel info that validateForm() stashed; a
+    // bare UC… ID resolves offline to a non-null info array, so provide it.
+    $info = $resolver->resolve(self::CHANNEL_ID);
     $form_state = $this->createMock(FormStateInterface::class);
-    $form_state->method('getValue')->willReturn(self::CHANNEL_ID);
+    $form_state->method('get')->willReturn($info);
     $form_state->expects($this->never())->method('setRedirect');
 
     // EmpireSetupStatus is final (not mockable); construct a real one — it is
@@ -95,6 +98,39 @@ final class SetupFormTest extends UnitTestCase {
     // Must not throw — the WSOD is exactly what the guard prevents.
     $build = [];
     $form->submitForm($build, $form_state);
+  }
+
+  /**
+   * An unresolvable channel is rejected during validation, before provisioning.
+   */
+  public function testValidateRejectsUnresolvableChannel(): void {
+    $resolver = new ChannelInputResolver(
+      $this->createMock(ClientInterface::class),
+      $this->createMock(LoggerInterface::class),
+    );
+    $entity_type_manager = $this->createMock(EntityTypeManagerInterface::class);
+    $feed_instance_manager = new FeedInstanceManager($entity_type_manager, $this->createMock(StateInterface::class));
+    $orchestrator = new EmpireImportOrchestrator(
+      $entity_type_manager,
+      $feed_instance_manager,
+      $this->createMock(ThumbnailUpgrader::class),
+      $this->createMock(TimeInterface::class),
+      $this->createMock(LoggerInterface::class),
+    );
+    $setup_status = new EmpireSetupStatus($entity_type_manager);
+    $form = new SetupForm($resolver, $feed_instance_manager, $orchestrator, $setup_status, $this->createMock(LoggerInterface::class));
+    $form->setStringTranslation($this->getStringTranslationStub());
+
+    // A blank input cannot resolve (offline, no HTTP) → a field error, and
+    // nothing is stashed for submit.
+    $form_state = $this->createMock(FormStateInterface::class);
+    $form_state->method('getValue')->willReturn('   ');
+    $form_state->expects($this->once())->method('setErrorByName')
+      ->with('channel', $this->anything());
+    $form_state->expects($this->never())->method('set');
+
+    $build = [];
+    $form->validateForm($build, $form_state);
   }
 
 }

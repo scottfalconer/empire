@@ -22,7 +22,7 @@ use Symfony\Component\Yaml\Yaml;
 final class FeedTypeConfigTest extends UnitTestCase {
 
   /**
-   * Editor edits survive re-import + aged-out nodes are kept (SPEC §8).
+   * Editor edits survive re-import + aged-out nodes are kept.
    */
   public function testVideoFeedPreservesEditsAndKeepsAgedOut(): void {
     $config = $this->loadFeedType('empire_youtube_videos');
@@ -33,7 +33,7 @@ final class FeedTypeConfigTest extends UnitTestCase {
   }
 
   /**
-   * Media refreshes metadata, keeps aged-out media, and dedupes (SPEC §8).
+   * Media refreshes metadata, keeps aged-out media, and dedupes.
    */
   public function testMediaFeedRefreshesKeepsAndDedupes(): void {
     $config = $this->loadFeedType('empire_youtube_media');

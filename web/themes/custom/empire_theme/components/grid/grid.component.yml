@@ -10,6 +10,11 @@ props:
       type: string
       title: Columns
       enum: ["auto", "2", "3", "4"]
+      "meta:enum":
+        auto: Auto
+        "2": "2 columns"
+        "3": "3 columns"
+        "4": "4 columns"
       default: "auto"
 slots:
   items:

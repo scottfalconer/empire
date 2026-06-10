@@ -26,7 +26,7 @@ use Psr\Log\LoggerInterface;
  * Tests the two-feed import orchestration.
  *
  * Drives import() with mocked Feeds/entity collaborators (no network, no DB) to
- * lock in the orchestration contracts: media feed before video feed (SPEC §8),
+ * lock in the orchestration contracts: media feed before video feed,
  * the channel-stamp no-overwrite guard (only fills an empty field_channel), and
  * the best-effort error handling that must never white-screen setup/refresh.
  */
@@ -46,7 +46,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
   private const CHANNEL_ID = 99;
 
   /**
-   * Media feed imports before the video feed (SPEC §8 media-first ordering).
+   * Media feed imports before the video feed (media-first ordering).
    */
   public function testImportRunsMediaFeedBeforeVideoFeed(): void {
     $order = [];
@@ -75,7 +75,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
   }
 
   /**
-   * Fills field_channel only when empty — editor curation is kept (SPEC §8).
+   * Fills field_channel only when empty — editor curation is kept.
    */
   public function testStampChannelFillsOnlyEmptyChannelField(): void {
     $emptyField = $this->createMock(FieldItemListInterface::class);
@@ -107,7 +107,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
   }
 
   /**
-   * A post-import stamping failure is logged, not thrown (no WSOD; SPEC §6).
+   * A post-import stamping failure is logged, not thrown (no WSOD).
    */
   public function testPostImportStampingFailureIsLoggedNotThrown(): void {
     $logger = $this->createMock(LoggerInterface::class);

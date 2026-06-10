@@ -1,0 +1,17 @@
+{#
+/**
+ * @file
+ * Basic "page" node (About / Privacy / Terms …) → a readable prose column.
+ *
+ * The page title is rendered by page.html.twig (.page-head). Drupal's default
+ * node template leaves the body full-bleed (≈180 chars/line on desktop), so here
+ * we wrap it in a width-capped prose column aligned with the title's padding.
+ */
+#}
+<article{{ attributes }}>
+  {{ title_prefix }}
+  {{ title_suffix }}
+  <div class="empire-prose">
+    {{ content }}
+  </div>
+</article>

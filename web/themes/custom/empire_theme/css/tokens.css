@@ -21,7 +21,7 @@
   --muted: #a7a7b4;
   --muted-2: #84848e; /* bumped from design #74747f (≈4.26:1) → AA 4.5 on --bg (Phase G) */
   --accent: #ff3b5c;
-  --accent-press: #e22247;
+  --accent-press: #ec3050; /* lifted from #e22247 (#170509 label = 4.29:1, failed AA) to 4.81:1, keeps a visible "pressed" darken */
   --on-accent: #170509;
   /* radius system (design refresh): one scale, used everywhere */
   --r-card: 12px;

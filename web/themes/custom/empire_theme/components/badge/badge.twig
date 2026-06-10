@@ -1,2 +1,2 @@
 {# Empire badge — small label. #}
-<span class="empire-badge empire-badge--{{ variant|default('accent') }}">{{ text }}</span>
+{% if text is not empty %}<span{{ (attributes ?? create_attribute()).addClass('empire-badge', 'empire-badge--' ~ variant|default('accent')) }}>{{ text }}</span>{% endif %}

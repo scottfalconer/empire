@@ -38,7 +38,7 @@ img { max-width: 100%; height: auto; display: block; }
 ::-webkit-scrollbar-thumb:hover { background: #3a3a47; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* Honor reduced-motion globally (SPEC §24); components also gate animations on no-preference. */
+/* Honor reduced-motion globally; components also gate animations on no-preference. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .001ms !important;
@@ -58,11 +58,20 @@ h3 { font-size: var(--empire-text-xl); }
 
 p { margin: 0 0 var(--empire-space-4); color: var(--empire-text-muted); }
 
-/* Accessibility: always-visible focus ring (SPEC §24) */
+/* Accessibility: always-visible focus ring. */
 :focus-visible {
   outline: 3px solid var(--empire-accent);
   outline-offset: 2px;
   border-radius: var(--empire-radius-sm);
+}
+
+/* Accent-filled controls: an accent ring equals their fill and disappears. A
+   white ring contrasts with both the accent fill (~3.4:1) and the dark page
+   (~19:1), keeping the focus indicator WCAG-visible on either side. */
+.btn-accent:focus-visible,
+.btn-sub:focus-visible,
+.klaro .cm-btn-success:focus-visible {
+  outline-color: #fff;
 }
 
 /* ---- Layout ---- */
@@ -112,7 +121,7 @@ main { width: 100%; }
   scroll-snap-align: start;
 }
 
-/* ---- Empty / first-run states (SPEC §25) ---- */
+/* ---- Empty / first-run states ---- */
 .view-empty {
   padding: var(--empire-space-12);
   text-align: center;
@@ -250,6 +259,16 @@ main { width: 100%; }
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);
 }
+/* When the video has no description (the YouTube feed supplies none), the source
+   button follows the meta directly. Drop its redundant top rule so the meta's
+   bottom rule isn't doubled with an empty band between the two. With a
+   description present, the source is no longer adjacent to the meta, so it keeps
+   its rule. */
+.empire-watch__meta + .empire-watch__source {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
 .empire-watch__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .empire-watch__tags a {
   font-size: 12px;
@@ -286,7 +305,44 @@ main { width: 100%; }
 }
 .page-sub { color: var(--muted); font-size: 16px; margin: 8px 0 0; max-width: 640px; }
 
+/* ---- Basic content pages (About / Privacy / Terms) — readable prose column ----
+   Default node body is full-bleed (~180 chars/line on desktop). Cap it to a
+   comfortable measure, aligned with the .page-head left padding. */
+.empire-prose {
+  max-width: 760px;
+  padding: 20px clamp(18px, 4vw, 52px) 48px;
+  color: var(--text);
+}
+.empire-prose p { margin: 0 0 1em; line-height: 1.7; }
+.empire-prose p:last-child { margin-bottom: 0; }
+.empire-prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.empire-prose h2 { font-family: var(--display); font-size: 24px; margin: 1.6em 0 .4em; }
+.empire-prose h3 { font-family: var(--display); font-size: 19px; margin: 1.4em 0 .4em; }
+.empire-prose ul, .empire-prose ol { margin: 0 0 1em; padding-left: 1.4em; }
+.empire-prose li + li { margin-top: .3em; }
+.empire-prose img { max-width: 100%; height: auto; border-radius: var(--r-card); }
+
 /* ---- Pager ---- */
 .pager__items { display: flex; gap: var(--empire-space-2); list-style: none; padding: 0; justify-content: center; flex-wrap: wrap; }
 .pager__item a { display: inline-block; padding: var(--empire-space-2) var(--empire-space-3); border: 1px solid var(--empire-border); border-radius: var(--empire-radius-sm); color: var(--empire-text); }
 .pager__item.is-active a { background: var(--empire-accent); color: var(--empire-accent-contrast); border-color: var(--empire-accent); }
+
+/* ---- Branded error pages (404/403) ---- */
+.empire-error { max-width: 640px; margin: 80px auto; padding: 0 20px; text-align: center; }
+.empire-error__title { font-size: 2rem; margin: 0 0 12px; }
+.empire-error__body { color: rgba(255, 255, 255, .72); margin: 0 0 28px; }
+.empire-error__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ---- Respect prefers-reduced-motion ----
+ * Cards lift/scale on hover and the hero fades in over 0.8s; for visitors who
+ * ask for reduced motion, near-instant everything (and disable smooth scroll). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

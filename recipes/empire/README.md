@@ -51,7 +51,5 @@ clean install.)
 
 ## Documentation
 
-- [`docs/setup.md`](docs/setup.md) — setup & troubleshooting
+- [`docs/setup.md`](docs/setup.md) — setup, importing, curating videos, privacy & consent, troubleshooting
 - [`docs/architecture.md`](docs/architecture.md) — how and why it is built this way
-- [`docs/validation.md`](docs/validation.md) — test & release checklist
-- [`AGENTS.md`](AGENTS.md) — guardrails for build agents

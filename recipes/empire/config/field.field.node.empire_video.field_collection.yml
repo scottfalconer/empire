@@ -10,7 +10,7 @@ field_name: field_collection
 entity_type: node
 bundle: empire_video
 label: Collection
-description: ''
+description: 'Group this video into one or more rows (collections) on your homepage.'
 required: false
 translatable: true
 default_value: {  }

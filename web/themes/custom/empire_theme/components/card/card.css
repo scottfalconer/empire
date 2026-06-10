@@ -2,7 +2,7 @@
  * Empire card — the base list/grid/rail unit for a video. Re-skinned to the
  * design's grid card (.gcard): 16:9 poster (10px radius), hover lift + thumbnail
  * colour-pop, title/meta below. Accessible: the whole card is a link, the title
- * is always visible (no hover-only content, SPEC §24). Width is the container's
+ * is always visible (no hover-only content). Width is the container's
  * job (grid cell / rail slot). Artwork fallback resolved upstream.
  */
 .empire-card { position: relative; }
@@ -75,5 +75,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* Reserve two lines so cards stay uniform height when titles mix 1- and
+     2-line lengths (e.g. talk channels) — keeps the grid's dates aligned. */
+  min-height: 2.5em;
 }
 .empire-card__meta { margin: 0; font-size: 12.5px; color: var(--muted); }

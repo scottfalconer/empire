@@ -10,7 +10,7 @@
  *    ABOVE the scroll, not trapped inside (and clipped by) it.
  *
  * Scroll is native: swipe (touch), trackpad, keyboard (each card is a focusable
- * link → Tab scrolls it into view). No hover-only controls (SPEC §24); the right
+ * link → Tab scrolls it into view). No hover-only controls; the right
  * edge fade signals there's more. /videos grid is styled in grid.css.
  */
 

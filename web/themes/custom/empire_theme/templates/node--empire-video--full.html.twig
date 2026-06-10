@@ -7,40 +7,39 @@
  * `empire_watch_date` is built in empire_theme_preprocess_node().
  */
 #}
-<article class="empire-watch">
-  <div class="empire-watch__stage">
-    {% if empire_watch_poster %}
-      <img class="empire-watch__poster" src="{{ empire_watch_poster }}" alt="" aria-hidden="true" loading="lazy">
-    {% endif %}
-    {% if empire_unavailable %}
-      <div class="empire-watch__unavailable">
-        <p>{{ 'This video is currently unavailable. It may have been removed or made private on YouTube.'|t }}</p>
-      </div>
-    {% else %}
-      {{ content.field_video }}
-    {% endif %}
-  </div>
-  <div class="empire-watch__info">
-    <h1 class="empire-watch__title">{{ label }}</h1>
-    <div class="empire-watch__meta">
+<article{{ attributes.addClass('empire-watch') }}>
+  {# The hand-tuned stage is now the video-stage SDC; the consent-gated field
+     render is passed in as the `player` slot so Klaro gating is preserved. #}
+  {% embed 'empire_theme:video-stage' with {
+    poster: empire_watch_poster,
+    unavailable: empire_unavailable|default(false) ? true : false,
+    attributes: create_attribute(),
+  } %}
+    {% block player %}{{ content.field_video }}{% endblock %}
+  {% endembed %}
+  {# Info block is now the video-meta SDC; the field renders are passed in as
+     slots so the per-field conditional wrappers stay in the node (Drupal glue). #}
+  {% embed 'empire_theme:video-meta' with {
+    title: label,
+    date: empire_watch_date|default(''),
+    source_url: empire_watch_source_url|default(''),
+    attributes: create_attribute(),
+  } %}
+    {% block collection %}
       {% if content.field_collection|render|trim %}
         <span class="empire-watch__collection">{{ content.field_collection }}</span>
       {% endif %}
-      {% if empire_watch_date %}<span class="empire-watch__date">{{ empire_watch_date }}</span>{% endif %}
-    </div>
-    {% if content.field_content|render|trim %}
-      <div class="empire-watch__desc">{{ content.field_content }}</div>
-    {% endif %}
-    {% if empire_watch_source_url %}
-      <div class="empire-watch__source">
-        <a class="btn btn-ghost btn-sm" href="{{ empire_watch_source_url }}" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><path d="M10 14 21 3"/></svg>
-          {{ 'Watch on YouTube'|t }}
-        </a>
-      </div>
-    {% endif %}
-    {% if content.field_tags|render|trim %}
-      <div class="empire-watch__tags">{{ content.field_tags }}</div>
-    {% endif %}
-  </div>
+    {% endblock %}
+    {% block description %}
+      {% if content.field_content|render|trim %}
+        <div class="empire-watch__desc">{{ content.field_content }}</div>
+      {% endif %}
+    {% endblock %}
+    {% block tags %}
+      {% if content.field_tags|render|trim %}
+        <div class="empire-watch__tags">{{ content.field_tags }}</div>
+      {% endif %}
+    {% endblock %}
+  {% endembed %}
+  {{ include('empire_theme:share-bar', { title: label }, with_context = false) }}
 </article>

@@ -18,6 +18,9 @@ props:
       type: string
       title: Tone
       enum: [default, surface]
+      "meta:enum":
+        default: Default
+        surface: Surface
       default: default
 slots:
   content:

@@ -4,7 +4,7 @@ Streaming-style cinematic dark theme for the **Empire** video site template.
 Single-Directory Components (SDC), view modes, and design tokens — renders
 `empire_video` nodes as cards, collection rails, and a featured hero.
 
-Normally installed by the [Empire recipe](https://www.drupal.org/project/empire).
+Normally installed by the [Empire recipe](https://github.com/scottfalconer/empire).
 
 ## Requirements
 

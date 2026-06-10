@@ -11,7 +11,7 @@ field_name: field_source_status
 entity_type: node
 bundle: empire_video
 label: 'Source status'
-description: ''
+description: 'Active shows the video normally. Hidden keeps the record but removes it from every listing. Unavailable replaces the player with a notice (use when removed or made private on YouTube).'
 required: false
 translatable: true
 default_value:

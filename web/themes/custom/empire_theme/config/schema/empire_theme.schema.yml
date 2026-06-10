@@ -1,0 +1,9 @@
+# Schema for the Empire theme settings.
+empire_theme.settings:
+  type: theme_settings
+  label: 'Empire theme settings'
+  mapping:
+    empire_hero_motion:
+      type: string
+      label: 'Homepage hero motion'
+      # 'autoplay' = consent-gated muted preview; 'static' = still poster only.

@@ -14,5 +14,10 @@ props:
     variant:
       type: string
       title: Style
-      enum: [accent, neutral, live]
+      enum: [accent, neutral, live, new]
+      "meta:enum":
+        accent: Accent
+        neutral: Neutral
+        live: Live
+        new: New
       default: accent

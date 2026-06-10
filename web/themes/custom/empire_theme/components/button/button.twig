@@ -15,4 +15,9 @@
 {% set smap = { sm: 'btn-sm', lg: 'btn-lg', default: '' } %}
 {% set vclass = vmap[variant|default('primary')]|default('btn-accent') %}
 {% set sclass = smap[size|default('default')]|default('') %}
-<a class="btn{{ vclass ? ' ' ~ vclass }}{{ sclass ? ' ' ~ sclass }}" href="{{ url|default('#') }}">{{ label }}</a>
+{# Render only with both a label (accessible name) and a destination — no empty
+   links or focusable href="#" no-ops. Classes merged via the Attribute API so
+   Canvas/contextual/admin attributes flow through the root element. #}
+{% if label and url %}
+  <a{{ attributes.addClass(['btn', vclass, sclass]|filter(c => c)) }} href="{{ url }}">{{ label }}</a>
+{% endif %}

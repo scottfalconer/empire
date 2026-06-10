@@ -4,19 +4,32 @@
  * empire_collection term → cinematic collection tile (design .cat-tile).
  *
  * The whole tile links to the collection page. Gradient backdrop (hue by
- * nth-child, in CSS) + veil + name; a video-count badge shows only when > 0.
+ * nth-child, in CSS) + veil + name. Every tile shows a count/state badge —
+ * "N videos" when populated, "No videos yet" when empty — and empty tiles are
+ * de-emphasised (so a fresh, uncurated site reads as "organise these" rather
+ * than a wall of misleading empty categories).
  * `empire_collection_count` is built in empire_theme_preprocess_taxonomy_term().
+ *
+ * The tile is for the /collections listing (default view mode). On the term's own
+ * canonical page (full) the page-head h1 already names it, so rendering the
+ * self-tile would be a redundant self-link — skip it there.
  */
 #}
-<a class="cat-tile" href="{{ url }}">
+{% if view_mode|default('') != 'full' %}
+<a class="cat-tile{{ empire_collection_count ? '' : ' cat-tile--empty' }}" href="{{ url }}">
   <span class="cat-tile__bg" aria-hidden="true"></span>
   <span class="cat-veil" aria-hidden="true"></span>
-  {% if empire_collection_count %}
-    <span class="cat-count">{{ empire_collection_count }} {{ empire_collection_count == 1 ? 'video'|t : 'videos'|t }}</span>
-  {% endif %}
+  <span class="cat-count">
+    {%- if empire_collection_count -%}
+      {{ empire_collection_count }} {{ empire_collection_count == 1 ? 'video'|t : 'videos'|t }}
+    {%- else -%}
+      {{ 'No videos yet'|t }}
+    {%- endif -%}
+  </span>
   <span class="cat-body">
-    <span class="cat-tile__title">{{ term.label }}</span>
+    <h2 class="cat-tile__title">{{ term.label }}</h2>
     {% set desc = term.getDescription()|striptags|trim %}
-    {% if desc %}<p>{{ desc }}</p>{% endif %}
+    {% if desc %}<span class="cat-tile__desc">{{ desc }}</span>{% endif %}
   </span>
 </a>
+{% endif %}

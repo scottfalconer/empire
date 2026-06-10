@@ -8,21 +8,21 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\empire_tools\Service\ChannelInputResolver;
-use Drupal\empire_tools\Service\EmpireImportOrchestrator;
+use Drupal\empire_tools\Service\EmpireImportOrchestratorInterface;
 use Drupal\empire_tools\Service\EmpireSetupStatus;
 use Drupal\empire_tools\Service\FeedInstanceManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Onboarding form — paste a YouTube channel, Empire builds the site (SPEC §10).
+ * Onboarding form — paste a YouTube channel, Empire builds the site.
  */
 final class SetupForm extends FormBase {
 
   public function __construct(
     private readonly ChannelInputResolver $resolver,
     private readonly FeedInstanceManager $feedInstanceManager,
-    private readonly EmpireImportOrchestrator $orchestrator,
+    private readonly EmpireImportOrchestratorInterface $orchestrator,
     private readonly EmpireSetupStatus $setupStatus,
     private readonly LoggerInterface $logger,
   ) {}
@@ -133,19 +133,34 @@ final class SetupForm extends FormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * Resolve the channel during validation so a bad handle/URL surfaces as a
+   * field error (not a post-submit status message), and the resolved channel
+   * info is reused by submitForm() instead of resolving twice.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state): void {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $input = trim((string) $form_state->getValue('channel'));
     $info = $this->resolver->resolve($input);
-
     if ($info === NULL) {
-      $this->messenger()->addError($this->t("We couldn't find that YouTube channel. Check the handle, or paste the full channel URL."));
+      $form_state->setErrorByName('channel', $this->t("We couldn't find that YouTube channel. Check the handle, or paste the full channel URL."));
+      return;
+    }
+    $form_state->set('empire_channel_info', $info);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    // validateForm() already resolved + stashed the channel info.
+    $info = $form_state->get('empire_channel_info');
+    if ($info === NULL) {
       return;
     }
 
     // Provisioning saves the channel term and the feed instances; an entity
-    // storage/validation error here must not white-screen the wizard (SPEC §6,
-    // §25). The import itself is already internally guarded.
+    // storage/validation error here must not white-screen the wizard. The
+    // import itself is already internally guarded.
     try {
       $channel = $this->feedInstanceManager->ensureChannel($info);
       $this->feedInstanceManager->ensureFeeds($channel);
@@ -165,7 +180,7 @@ final class SetupForm extends FormBase {
 
     // Full success → "ta-da", straight to the live site.
     if ($count > 0 && !$had_error) {
-      $this->messenger()->addStatus($this->t('Your site is ready — we brought in @count videos from @channel. New uploads are checked automatically; feature videos, organise collections, and upload custom artwork any time.', [
+      $this->messenger()->addStatus($this->t('Your site is ready — @count videos from @channel are now on your site. New uploads are checked automatically; feature videos, organise collections, and upload custom artwork any time.', [
         '@count' => $count,
         '@channel' => $name,
       ]));
@@ -174,7 +189,7 @@ final class SetupForm extends FormBase {
     }
 
     // Anything less than a clean import lands on the dashboard — warn before
-    // celebrating (SPEC §25), with Refresh available to try again.
+    // celebrating, with Refresh available to try again.
     if ($count > 0) {
       $this->messenger()->addWarning($this->t('@count videos from @channel are in, but a few could not be fetched right now — they will be picked up on the next automatic check, or use Refresh to try again.', [
         '@count' => $count,

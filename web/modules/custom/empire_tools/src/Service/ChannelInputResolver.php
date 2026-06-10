@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Resolves human YouTube channel input into a channel ID and feed URL.
  *
- * This is the ONLY networked custom code in Empire (SPEC §6), so it is small,
+ * This is the ONLY networked custom code in Empire, so it is small,
  * isolated, and defensive:
  *  - only ever fetches allow-listed YouTube hosts,
  *  - short timeout, limited redirects,
@@ -30,6 +30,15 @@ final class ChannelInputResolver {
 
   private const TIMEOUT = 10;
   private const MAX_REDIRECTS = 3;
+
+  /**
+   * Cap on the fetched page body (8 MB).
+   *
+   * The channel ID sits near the top of the markup, so a bounded read is enough
+   * and a hostile/compromised upstream cannot exhaust memory (the limit applies
+   * to decoded bytes too).
+   */
+  private const MAX_BODY_BYTES = 8388608;
 
   /**
    * Matches a YouTube channel ID: "UC" + 22 url-safe chars.
@@ -108,8 +117,9 @@ final class ChannelInputResolver {
     // Bare handle without the @ (users often omit it) — normalise to @handle.
     // UC channel IDs are matched earlier by extractChannelId(), so a bare word
     // here is a handle, not an ID. The URL is hardcoded to youtube.com, so the
-    // SSRF allowlist is unaffected.
-    if (preg_match('#^[A-Za-z0-9_.-]+$#', $input)) {
+    // SSRF allowlist is unaffected. Constrain to YouTube's handle shape (3–30
+    // chars, not purely numeric) so a stray token isn't coined into a URL.
+    if (preg_match('#^[A-Za-z0-9_.-]{3,30}$#', $input) && !ctype_digit($input)) {
       return 'https://www.youtube.com/@' . $input;
     }
     // Bare legacy path: c/Name or user/Name (optionally leading slash).
@@ -195,8 +205,17 @@ final class ChannelInputResolver {
           },
         ],
         'headers' => ['Accept-Language' => 'en-US,en;q=0.9'],
+        'stream' => TRUE,
       ]);
-      $html = (string) $response->getBody();
+      // Read a bounded amount rather than buffering the whole body.
+      $html = '';
+      $body = $response->getBody();
+      while (!$body->eof()) {
+        $html .= $body->read(65536);
+        if (strlen($html) > self::MAX_BODY_BYTES) {
+          break;
+        }
+      }
       return [$this->parseChannelIdFromHtml($html), $this->parseLabelFromHtml($html)];
     }
     catch (\Throwable $e) {
