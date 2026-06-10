@@ -374,7 +374,7 @@ function empire_theme_page_attachments_alter(array &$attachments): void {
       '#attributes' => [
         'rel' => 'icon',
         'type' => 'image/svg+xml',
-        'href' => '/' . $path . '/favicon.svg',
+        'href' => base_path() . $path . '/favicon.svg',
       ],
     ],
     'empire_favicon_svg',
@@ -397,7 +397,7 @@ function empire_theme_page_attachments_alter(array &$attachments): void {
         '#tag' => 'link',
         '#attributes' => [
           'rel' => 'preload',
-          'href' => '/' . $path . '/fonts/' . $font . '.woff2',
+          'href' => base_path() . $path . '/fonts/' . $font . '.woff2',
           'as' => 'font',
           'type' => 'font/woff2',
           'crossorigin' => 'anonymous',
