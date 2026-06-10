@@ -105,3 +105,13 @@ To tighten this for a multi-author or untrusted-editor site, revoke *configure
 Empire channel* and *refresh Empire imports* from `content_editor` and grant
 them to a dedicated site-manager/admin role instead; the curate permissions
 (create/edit/delete `empire_video`) can stay with editors.
+
+### Content authorship (known limitation)
+
+Imported videos and the demo pages (About/Privacy/Terms) are authored by the
+install-time superuser (`uid 1`) — the conventional owner for a fresh recipe
+apply, where no other user exists yet. This is cosmetic: it has no access-control
+or data consequence. For distinct authorship on a multi-author site, create an
+editor user, reassign the existing content, and set `owner_feed_author: true` on
+the two `feeds.feed_type.empire_youtube_*` configs so future imports are owned by
+the feed's owner rather than `uid 1`.
