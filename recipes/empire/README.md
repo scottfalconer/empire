@@ -41,6 +41,12 @@ This applies the baseline, installs the theme + tools, builds the content model
 and Views, and composes the homepage. (See `docs/setup.md` for the from-zero
 clean install.)
 
+Empire isn't on drupal.org yet, so it installs from source — copy the three
+directories into your site and apply the recipe by path (above). Once the
+packages are published, `composer require drupal/empire` + `drush recipe empire`
+will work with no code change; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for
+the maintainer publishing plan.
+
 ## Use it
 
 1. Go to **`/admin/empire/setup`**.

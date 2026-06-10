@@ -39,7 +39,9 @@ Starting from a Drupal CMS site:
 
 > The custom module/theme aren't on Packagist yet, so install by copying the
 > directories (above) rather than `composer require`. The recipe's `composer.json`
-> documents the intended package dependencies for when they are published.
+> documents the intended package dependencies for when they are published. See
+> [`recipes/empire/docs/PUBLISHING.md`](recipes/empire/docs/PUBLISHING.md) for the
+> drupal.org publishing plan.
 
 ## What you get
 
