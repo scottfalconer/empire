@@ -36,6 +36,8 @@ services:
       - '@entity_type.manager'
       - '@uuid'
       - '@logger.channel.empire_tools'
+      - '@config.factory'
+      - '@path.validator'
   logger.channel.empire_tools:
     parent: logger.channel_base
     arguments:

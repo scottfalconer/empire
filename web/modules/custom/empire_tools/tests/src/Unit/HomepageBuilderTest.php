@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Drupal\Tests\empire_tools\Unit;
 
 use Drupal\Component\Uuid\UuidInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Path\PathValidatorInterface;
+use Drupal\Core\Url;
 use Drupal\empire_tools\Service\HomepageBuilder;
 use Drupal\Tests\UnitTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,7 +31,11 @@ final class HomepageBuilderTest extends UnitTestCase {
   /**
    * Builds the service with a deterministic UUID generator.
    */
-  private function builder(): HomepageBuilder {
+  private function builder(
+    ?EntityTypeManagerInterface $etm = NULL,
+    ?ConfigFactoryInterface $configFactory = NULL,
+    ?PathValidatorInterface $pathValidator = NULL,
+  ): HomepageBuilder {
     $uuid = $this->createMock(UuidInterface::class);
     $counter = 0;
     $uuid->method('generate')->willReturnCallback(
@@ -34,10 +44,21 @@ final class HomepageBuilderTest extends UnitTestCase {
       },
     );
     return new HomepageBuilder(
-      $this->createMock(EntityTypeManagerInterface::class),
+      $etm ?? $this->createMock(EntityTypeManagerInterface::class),
       $uuid,
       new NullLogger(),
+      $configFactory ?? $this->createMock(ConfigFactoryInterface::class),
+      $pathValidator ?? $this->createMock(PathValidatorInterface::class),
     );
+  }
+
+  /**
+   * Invokes the private loadHomePage() and returns the resolved page (or NULL).
+   */
+  private function loadHomePage(HomepageBuilder $builder): ?object {
+    $method = new \ReflectionMethod($builder, 'loadHomePage');
+    $method->setAccessible(TRUE);
+    return $method->invoke($builder);
   }
 
   /**
@@ -134,6 +155,53 @@ final class HomepageBuilderTest extends UnitTestCase {
   public function testBlockComponent(): void {
     $block = $this->invokePrivate($this->builder(), 'block', 'some_view-block_x');
     $this->assertSame('block.views_block.some_view-block_x', $block['component_id']);
+  }
+
+  /**
+   * Resolves the configured front page (not the hard-coded baseline UUID).
+   */
+  public function testLoadHomePageResolvesConfiguredFrontPage(): void {
+    $page = $this->createMock(EntityInterface::class);
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('load')->willReturn($page);
+    $etm = $this->createMock(EntityTypeManagerInterface::class);
+    $etm->method('getStorage')->with('canvas_page')->willReturn($storage);
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->with('page.front')->willReturn('/page/1');
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('get')->with('system.site')->willReturn($config);
+
+    $url = $this->createMock(Url::class);
+    $url->method('isRouted')->willReturn(TRUE);
+    $url->method('getRouteName')->willReturn('entity.canvas_page.canonical');
+    $url->method('getRouteParameters')->willReturn(['canvas_page' => '1']);
+    $validator = $this->createMock(PathValidatorInterface::class);
+    $validator->method('getUrlIfValid')->with('/page/1')->willReturn($url);
+
+    $this->assertSame($page, $this->loadHomePage($this->builder($etm, $factory, $validator)));
+  }
+
+  /**
+   * Falls back to the baseline UUID when page.front isn't a canvas page.
+   */
+  public function testLoadHomePageFallsBackToBaselineUuid(): void {
+    $fallback = $this->createMock(EntityInterface::class);
+    $storage = $this->createMock(EntityStorageInterface::class);
+    $storage->method('loadByProperties')->willReturn([$fallback]);
+    $etm = $this->createMock(EntityTypeManagerInterface::class);
+    $etm->method('getStorage')->willReturn($storage);
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturn('/not-a-canvas-page');
+    $factory = $this->createMock(ConfigFactoryInterface::class);
+    $factory->method('get')->willReturn($config);
+
+    // page.front does not resolve to a canvas_page route.
+    $validator = $this->createMock(PathValidatorInterface::class);
+    $validator->method('getUrlIfValid')->willReturn(NULL);
+
+    $this->assertSame($fallback, $this->loadHomePage($this->builder($etm, $factory, $validator)));
   }
 
 }

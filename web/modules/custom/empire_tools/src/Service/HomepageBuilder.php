@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Drupal\empire_tools\Service;
 
 use Drupal\Component\Uuid\UuidInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Path\PathValidatorInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -33,6 +35,8 @@ final class HomepageBuilder implements HomepageBuilderInterface {
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly UuidInterface $uuid,
     private readonly LoggerInterface $logger,
+    private readonly ConfigFactoryInterface $configFactory,
+    private readonly PathValidatorInterface $pathValidator,
   ) {}
 
   /**
@@ -98,9 +102,25 @@ final class HomepageBuilder implements HomepageBuilderInterface {
 
   /**
    * Loads the front "Home" canvas page, or NULL if unavailable.
+   *
+   * Resolves the configured front page (system.site:page.front) so it is not
+   * coupled to the baseline's canvas_page UUID: if page.front routes to a
+   * canvas_page, that one is composed. Otherwise falls back to the baseline
+   * "Home" page by its known UUID.
    */
   private function loadHomePage(): ?object {
     $storage = $this->entityTypeManager->getStorage('canvas_page');
+    $front = $this->configFactory->get('system.site')->get('page.front');
+    if (is_string($front) && $front !== '') {
+      $url = $this->pathValidator->getUrlIfValid($front);
+      if ($url && $url->isRouted() && $url->getRouteName() === 'entity.canvas_page.canonical') {
+        $id = $url->getRouteParameters()['canvas_page'] ?? NULL;
+        $page = $id !== NULL ? $storage->load($id) : NULL;
+        if ($page !== NULL) {
+          return $page;
+        }
+      }
+    }
     $matches = $storage->loadByProperties(['uuid' => self::HOME_PAGE_UUID]);
     return $matches ? reset($matches) : NULL;
   }
