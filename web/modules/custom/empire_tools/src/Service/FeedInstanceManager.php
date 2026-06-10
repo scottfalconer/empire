@@ -16,7 +16,7 @@ use Drupal\taxonomy\TermInterface;
  * node) of the exported feed types, both pointing at the channel feed URL. The
  * term ↔ feed-instance-id association is kept in state (multi-channel-ready).
  */
-final class FeedInstanceManager {
+final class FeedInstanceManager implements FeedInstanceManagerInterface {
 
   private const MEDIA_FEED_TYPE = 'empire_youtube_media';
   private const NODE_FEED_TYPE = 'empire_youtube_videos';
@@ -50,9 +50,6 @@ final class FeedInstanceManager {
     $term->set('field_youtube_channel_url', ['uri' => $info['channel_url']]);
     $term->set('field_youtube_feed_url', $info['feed_url']);
     $term->set('field_import_enabled', TRUE);
-    if (!empty($info['handle'])) {
-      $term->set('field_youtube_handle', $info['handle']);
-    }
     $term->save();
     return $term;
   }

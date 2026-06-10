@@ -7,6 +7,8 @@ namespace Drupal\empire_tools\Service;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Lock\LockBackendInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\feeds\FeedInterface;
 use Drupal\media\MediaInterface;
 use Drupal\taxonomy\TermInterface;
@@ -38,13 +40,24 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    */
   private const IMPORT_TIME_LIMIT = 300;
 
+  /**
+   * Max nodes a single post-process pass scans.
+   *
+   * A YouTube channel-feed fetch returns at most a feed page (~15 items), so an
+   * import's delta is small; capping the post-process rescan keeps stamping +
+   * thumbnail-upgrading proportional to that delta, not the whole catalogue.
+   */
+  private const POST_PROCESS_LIMIT = 50;
+
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly FeedInstanceManager $feedInstanceManager,
-    private readonly ThumbnailUpgrader $thumbnailUpgrader,
+    private readonly FeedInstanceManagerInterface $feedInstanceManager,
+    private readonly ThumbnailUpgraderInterface $thumbnailUpgrader,
     private readonly TimeInterface $time,
     private readonly LoggerInterface $logger,
     private readonly LockBackendInterface $lock,
+    private readonly MessengerInterface $messenger,
+    private readonly StateInterface $state,
   ) {}
 
   /**
@@ -113,17 +126,83 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    */
   public function postProcess(TermInterface $channel, int $node_feed_id, bool $success = TRUE): void {
     try {
-      $this->stampChannel($channel, $node_feed_id);
+      // Load the import's recent nodes ONCE (bounded), then stamp + upgrade in
+      // one pass instead of rescanning the channel's whole history twice.
+      $nodes = $this->recentFeedNodes($node_feed_id);
+      $this->stampChannel($channel, $nodes);
       if ($success) {
         $channel->set('field_last_imported_at', $this->time->getRequestTime())->save();
       }
       $this->ensureFeaturedVideo();
-      $this->upgradeThumbnails($node_feed_id);
+      $this->upgradeThumbnails($nodes);
     }
     catch (\Throwable $e) {
       $this->logger->error('Empire post-import stamping failed: @msg', [
         '@msg' => $e->getMessage(),
       ]);
+    }
+  }
+
+  /**
+   * Loads this channel's most-recently-imported empire_video nodes (bounded).
+   *
+   * The node feed uses Skip + no-expire, so feeds_item.target_id matches the
+   * channel's cumulative node history; ordering by the changed timestamp and
+   * capping the result keeps post-processing proportional to one import's delta
+   * (a feed page) rather than the whole catalogue, even under the time cap.
+   *
+   * @return \Drupal\node\NodeInterface[]
+   *   The loaded nodes, newest first.
+   */
+  private function recentFeedNodes(int $node_feed_id): array {
+    $node_storage = $this->entityTypeManager->getStorage('node');
+    $ids = $node_storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('type', 'empire_video')
+      ->condition('feeds_item.target_id', $node_feed_id)
+      ->sort('changed', 'DESC')
+      ->range(0, self::POST_PROCESS_LIMIT)
+      ->execute();
+    return $node_storage->loadMultiple($ids);
+  }
+
+  /**
+   * Runs Empire's post-import processing for every channel, on cron.
+   *
+   * For each channel whose video feed has imported something new since the last
+   * run (tracked by a persisted per-channel state key), stamps + upgrades the
+   * new videos. Idempotent, with a per-channel try/catch so one channel's
+   * failure never aborts the rest, and it honours the field_import_enabled
+   * toggle. Extracted from hook_cron() so the gate + isolation are testable.
+   */
+  public function cronPostProcess(): void {
+    try {
+      $channels = $this->entityTypeManager->getStorage('taxonomy_term')
+        ->loadByProperties(['vid' => 'empire_channel']);
+    }
+    catch (\Throwable $e) {
+      return;
+    }
+    foreach ($channels as $channel) {
+      // A paused channel is not auto-imported (manual Refresh still works).
+      if ($channel->hasField('field_import_enabled') && !$channel->get('field_import_enabled')->value) {
+        continue;
+      }
+      try {
+        $feeds = $this->feedInstanceManager->getFeeds($channel);
+        $imported = $feeds['videos']->getImportedTime();
+        $key = 'empire_tools.cron_postprocess.' . $channel->id();
+        if ($imported > (int) $this->state->get($key, 0)) {
+          $this->postProcess($channel, (int) $feeds['videos']->id());
+          $this->state->set($key, $imported);
+        }
+      }
+      catch (\Throwable $e) {
+        $this->logger->error('Empire cron post-process failed for @id: @m', [
+          '@id' => $channel->id(),
+          '@m' => $e->getMessage(),
+        ]);
+      }
     }
   }
 
@@ -171,15 +250,12 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    * Best-effort + idempotent (the upgrader skips media already hi-res and older
    * videos that have no maxres). Keeps the cinematic layout sharp without
    * hotlinking YouTube (the images are stored locally — consent-clean, §19).
+   *
+   * @param \Drupal\node\NodeInterface[] $nodes
+   *   The recently-imported nodes (loaded once by recentFeedNodes()).
    */
-  private function upgradeThumbnails(int $node_feed_id): void {
-    $node_storage = $this->entityTypeManager->getStorage('node');
-    $ids = $node_storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('type', 'empire_video')
-      ->condition('feeds_item.target_id', $node_feed_id)
-      ->execute();
-    foreach ($node_storage->loadMultiple($ids) as $node) {
+  private function upgradeThumbnails(array $nodes): void {
+    foreach ($nodes as $node) {
       $media = $node->get('field_video')->entity;
       if ($media instanceof MediaInterface) {
         $this->thumbnailUpgrader->upgrade($media);
@@ -190,40 +266,69 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
   /**
    * Runs one feed import synchronously, capturing the count and any error.
    *
+   * Feeds does NOT throw on the common import failures: a fetch failure, empty
+   * feed, or lock contention (FeedsRuntimeException subclasses) is caught by
+   * FeedsExecutable::handleException, which queues a messenger error/warning
+   * and returns. So inferring success from "no exception thrown" would falsely
+   * report a failed refresh as a clean import (and stamp last-imported). Detect
+   * failure from the messages Feeds queues during THIS import: snapshot + clear
+   * the messenger first so only this import's messages are read, then restore
+   * the snapshot — suppressing Feeds' raw message in favour of the caller's
+   * friendly one (the caller logs/shows the failure from the returned 'error').
+   *
    * @return array{count: int, error: ?string}
-   *   The feed's item count and an error message if the import failed.
+   *   The feed's item count and an error message if the run failed.
    */
   private function runImport(FeedInterface $feed): array {
+    // Snapshot + clear so only THIS import's messages are read afterwards.
+    /** @var array<string, list<\Drupal\Component\Render\MarkupInterface|string>> $snapshot */
+    $snapshot = $this->messenger->all();
+    $this->messenger->deleteAll();
+    $error = NULL;
     try {
       $feed->import();
-      return ['count' => (int) $feed->getItemCount(), 'error' => NULL];
     }
     catch (\Throwable $e) {
+      $error = $e->getMessage();
+    }
+    /** @var array<string, list<\Drupal\Component\Render\MarkupInterface|string>> $queued */
+    $queued = $this->messenger->all();
+    $this->messenger->deleteAll();
+    // Restore the caller's pre-existing messages; Feeds' own raw message is
+    // dropped in favour of the friendly one the caller derives from 'error'.
+    foreach ($snapshot as $type => $messages) {
+      foreach ($messages as $message) {
+        $this->messenger->addMessage($message, $type);
+      }
+    }
+    if ($error === NULL) {
+      $feeds_message = $queued[MessengerInterface::TYPE_ERROR][0]
+        ?? $queued[MessengerInterface::TYPE_WARNING][0]
+        ?? NULL;
+      $error = $feeds_message !== NULL ? (string) $feeds_message : NULL;
+    }
+    if ($error !== NULL) {
       $this->logger->error('Empire import failed for feed @id: @msg', [
         '@id' => $feed->id(),
-        '@msg' => $e->getMessage(),
+        '@msg' => $error,
       ]);
-      return ['count' => (int) $feed->getItemCount(), 'error' => $e->getMessage()];
     }
+    return ['count' => (int) $feed->getItemCount(), 'error' => $error];
   }
 
   /**
    * Stamps field_channel on this channel's freshly-imported nodes.
    *
    * Only fills empty values, so editor curation and re-imports are never
-   * clobbered. The node feed is matched via its feeds_item tracking field.
+   * clobbered. Operates on the nodes loaded once by recentFeedNodes().
+   *
+   * @param \Drupal\taxonomy\TermInterface $channel
+   *   The channel term to stamp onto the nodes.
+   * @param \Drupal\node\NodeInterface[] $nodes
+   *   The recently-imported nodes.
    */
-  private function stampChannel(TermInterface $channel, int $node_feed_id): void {
-    $node_storage = $this->entityTypeManager->getStorage('node');
-    $ids = $node_storage->getQuery()
-      ->accessCheck(FALSE)
-      ->condition('type', 'empire_video')
-      ->condition('feeds_item.target_id', $node_feed_id)
-      ->execute();
-    if (!$ids) {
-      return;
-    }
-    foreach ($node_storage->loadMultiple($ids) as $node) {
+  private function stampChannel(TermInterface $channel, array $nodes): void {
+    foreach ($nodes as $node) {
       if ($node->get('field_channel')->isEmpty()) {
         $node->set('field_channel', ['target_id' => $channel->id()]);
         $node->save();

@@ -9,8 +9,8 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\empire_tools\Service\ChannelInputResolver;
 use Drupal\empire_tools\Service\EmpireImportOrchestratorInterface;
-use Drupal\empire_tools\Service\EmpireSetupStatus;
-use Drupal\empire_tools\Service\FeedInstanceManager;
+use Drupal\empire_tools\Service\EmpireSetupStatusInterface;
+use Drupal\empire_tools\Service\FeedInstanceManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,9 +21,9 @@ final class SetupForm extends FormBase {
 
   public function __construct(
     private readonly ChannelInputResolver $resolver,
-    private readonly FeedInstanceManager $feedInstanceManager,
+    private readonly FeedInstanceManagerInterface $feedInstanceManager,
     private readonly EmpireImportOrchestratorInterface $orchestrator,
-    private readonly EmpireSetupStatus $setupStatus,
+    private readonly EmpireSetupStatusInterface $setupStatus,
     private readonly LoggerInterface $logger,
   ) {}
 

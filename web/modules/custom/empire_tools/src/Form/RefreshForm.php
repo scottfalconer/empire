@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\empire_tools\Service\EmpireImportOrchestratorInterface;
-use Drupal\empire_tools\Service\EmpireSetupStatus;
+use Drupal\empire_tools\Service\EmpireSetupStatusInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class RefreshForm extends FormBase {
 
   public function __construct(
-    private readonly EmpireSetupStatus $setupStatus,
+    private readonly EmpireSetupStatusInterface $setupStatus,
     private readonly EmpireImportOrchestratorInterface $orchestrator,
     private readonly LoggerInterface $logger,
   ) {}

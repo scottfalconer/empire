@@ -18,7 +18,7 @@ use Drupal\views\ViewExecutable;
 /**
  * Implements hook_help().
  */
-function empire_tools_help($route_name, RouteMatchInterface $route_match) {
+function empire_tools_help(string $route_name, RouteMatchInterface $route_match): ?string {
   if ($route_name !== 'help.page.empire_tools') {
     return NULL;
   }
@@ -213,38 +213,14 @@ function empire_tools_views_query_alter(ViewExecutable $view, QueryPluginBase $q
  * wizard/refresh path. Run it here after each channel's video feed imports,
  * guarded by the feed's imported timestamp so it only fires when something
  * actually imported since last time. postProcess() is idempotent, so safe.
+ *
+ * Feeds' cron import is queued (asynchronous), so this post-process can trail
+ * a fresh import by one cron cycle. That is intentional and self-correcting:
+ * the state-key gate + the idempotent postProcess. Do not force a synchronous
+ * here, which would defeat Feeds' queue throttling.
  */
 function empire_tools_cron(): void {
-  try {
-    $channels = \Drupal::entityTypeManager()->getStorage('taxonomy_term')
-      ->loadByProperties(['vid' => 'empire_channel']);
-  }
-  catch (\Throwable $e) {
-    return;
-  }
-  if (!$channels) {
-    return;
-  }
-  /** @var \Drupal\empire_tools\Service\EmpireImportOrchestrator $orchestrator */
-  $orchestrator = \Drupal::service('empire_tools.import_orchestrator');
-  /** @var \Drupal\empire_tools\Service\FeedInstanceManager $feed_manager */
-  $feed_manager = \Drupal::service('empire_tools.feed_instance_manager');
-  $state = \Drupal::state();
-  foreach ($channels as $channel) {
-    try {
-      $feeds = $feed_manager->getFeeds($channel);
-      $imported = $feeds['videos']->getImportedTime();
-      $key = 'empire_tools.cron_postprocess.' . $channel->id();
-      if ($imported > (int) $state->get($key, 0)) {
-        $orchestrator->postProcess($channel, (int) $feeds['videos']->id());
-        $state->set($key, $imported);
-      }
-    }
-    catch (\Throwable $e) {
-      \Drupal::logger('empire_tools')->error('Empire cron post-process failed for @id: @m', [
-        '@id' => $channel->id(),
-        '@m' => $e->getMessage(),
-      ]);
-    }
-  }
+  // The loop (imported-time gate + per-channel isolation + pause toggle) lives
+  // in the orchestrator so it is unit-testable; this hook just invokes it.
+  \Drupal::service('empire_tools.import_orchestrator')->cronPostProcess();
 }

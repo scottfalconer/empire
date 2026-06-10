@@ -7,7 +7,7 @@ namespace Drupal\Tests\empire_tools\Unit;
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\PathValidatorInterface;
@@ -161,7 +161,7 @@ final class HomepageBuilderTest extends UnitTestCase {
    * Resolves the configured front page (not the hard-coded baseline UUID).
    */
   public function testLoadHomePageResolvesConfiguredFrontPage(): void {
-    $page = $this->createMock(EntityInterface::class);
+    $page = $this->createMock(ContentEntityInterface::class);
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('load')->willReturn($page);
     $etm = $this->createMock(EntityTypeManagerInterface::class);
@@ -186,7 +186,7 @@ final class HomepageBuilderTest extends UnitTestCase {
    * Falls back to the baseline UUID when page.front isn't a canvas page.
    */
   public function testLoadHomePageFallsBackToBaselineUuid(): void {
-    $fallback = $this->createMock(EntityInterface::class);
+    $fallback = $this->createMock(ContentEntityInterface::class);
     $storage = $this->createMock(EntityStorageInterface::class);
     $storage->method('loadByProperties')->willReturn([$fallback]);
     $etm = $this->createMock(EntityTypeManagerInterface::class);

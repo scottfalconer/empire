@@ -43,7 +43,6 @@ final class FeedInstanceManagerTest extends KernelTestBase {
     'channel_url' => 'https://www.youtube.com/channel/UCBJycsmduvYEL83R_U4JriQ',
     'feed_url' => 'https://www.youtube.com/feeds/videos.xml?channel_id=UCBJycsmduvYEL83R_U4JriQ',
     'label' => 'Tom Scott',
-    'handle' => '@TomScottGo',
   ];
 
   /**
@@ -59,7 +58,6 @@ final class FeedInstanceManagerTest extends KernelTestBase {
     $this->addField('field_youtube_channel_url', 'link');
     $this->addField('field_youtube_feed_url', 'string');
     $this->addField('field_import_enabled', 'boolean');
-    $this->addField('field_youtube_handle', 'string');
 
     $this->manager = new FeedInstanceManager(
       $this->container->get('entity_type.manager'),
@@ -94,7 +92,6 @@ final class FeedInstanceManagerTest extends KernelTestBase {
     $this->assertSame(self::INFO['channel_url'], $term->get('field_youtube_channel_url')->uri);
     $this->assertSame(self::INFO['feed_url'], $term->get('field_youtube_feed_url')->value);
     $this->assertTrue((bool) $term->get('field_import_enabled')->value);
-    $this->assertSame('@TomScottGo', $term->get('field_youtube_handle')->value);
   }
 
   /**

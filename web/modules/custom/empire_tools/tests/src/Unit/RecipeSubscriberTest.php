@@ -49,6 +49,20 @@ final class RecipeSubscriberTest extends UnitTestCase {
   }
 
   /**
+   * Canary: the subscriber reads core's @internal Recipe::$name property.
+   *
+   * If a core refactor renames/removes it, the subscriber's property_exists()
+   * guard degrades to a silent skip (no homepage compose). Assert it here so a
+   * core bump fails loudly instead.
+   */
+  public function testRecipeNamePropertyExists(): void {
+    $this->assertTrue(
+      property_exists(Recipe::class, 'name'),
+      'Core Recipe still exposes the $name property the subscriber reads.',
+    );
+  }
+
+  /**
    * Builds a RecipeAppliedEvent whose recipe has the given name.
    *
    * The Recipe and event are final with heavy constructors; the subscriber only

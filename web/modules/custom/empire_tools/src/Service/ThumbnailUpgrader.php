@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
  * requests in the browser — and fall back to the existing thumbnail
  * for older videos that 404 on maxres. Idempotent: skips already hi-res media.
  */
-class ThumbnailUpgrader {
+final class ThumbnailUpgrader implements ThumbnailUpgraderInterface {
 
   public function __construct(
     private readonly ClientInterface $httpClient,
@@ -52,6 +52,11 @@ class ThumbnailUpgrader {
     // Idempotent: skip media already at hi-res (e.g. on re-import).
     $current = $media->get('thumbnail')->entity;
     if ($current instanceof FileInterface) {
+      // A previous run's maxres file is our own '-maxres.jpg' marker — skip it
+      // without a disk image probe (most of a large channel's re-scan).
+      if (str_ends_with((string) $current->getFileUri(), '-maxres.jpg')) {
+        return FALSE;
+      }
       $image = $this->imageFactory->get($current->getFileUri());
       if ($image->isValid() && $image->getWidth() >= 1280) {
         return FALSE;
@@ -101,7 +106,7 @@ class ThumbnailUpgrader {
    * @return string
    *   The validated JPEG bytes, or '' if unavailable / not a valid hi-res JPEG.
    */
-  protected function fetchMaxres(string $video_id): string {
+  private function fetchMaxres(string $video_id): string {
     $data = '';
     $max_bytes = 5 * 1024 * 1024;
     try {

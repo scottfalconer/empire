@@ -10,7 +10,7 @@ use Drupal\taxonomy\TermInterface;
 /**
  * Builds the Empire dashboard status (connected channel, counts, last import).
  */
-final class EmpireSetupStatus {
+final class EmpireSetupStatus implements EmpireSetupStatusInterface {
 
   public function __construct(
     private readonly EntityTypeManagerInterface $entityTypeManager,
@@ -25,14 +25,19 @@ final class EmpireSetupStatus {
    * channel connected last.
    */
   public function getConnectedChannel(): ?TermInterface {
-    $channels = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties([
-      'vid' => 'empire_channel',
-    ]);
-    if (!$channels) {
+    $storage = $this->entityTypeManager->getStorage('taxonomy_term');
+    $ids = $storage->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('vid', 'empire_channel')
+      ->sort('tid', 'DESC')
+      ->range(0, 1)
+      ->execute();
+    if (!$ids) {
       return NULL;
     }
-    usort($channels, static fn(TermInterface $a, TermInterface $b): int => (int) $b->id() <=> (int) $a->id());
-    return reset($channels);
+    /** @var \Drupal\taxonomy\TermInterface|null $term */
+    $term = $storage->load((int) reset($ids));
+    return $term;
   }
 
   /**

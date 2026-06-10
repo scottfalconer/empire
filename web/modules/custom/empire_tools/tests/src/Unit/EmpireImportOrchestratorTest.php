@@ -10,10 +10,14 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Lock\LockBackendInterface;
+use Drupal\Core\Messenger\Messenger;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\Core\State\StateInterface;
 use Drupal\empire_tools\Service\EmpireImportOrchestrator;
 use Drupal\empire_tools\Service\FeedInstanceManager;
-use Drupal\empire_tools\Service\ThumbnailUpgrader;
+use Drupal\empire_tools\Service\FeedInstanceManagerInterface;
+use Drupal\empire_tools\Service\ThumbnailUpgraderInterface;
 use Drupal\feeds\FeedInterface;
 use Drupal\node\NodeInterface;
 use Drupal\taxonomy\TermInterface;
@@ -22,6 +26,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 
 /**
  * Tests the two-feed import orchestration.
@@ -225,6 +230,40 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
   }
 
   /**
+   * A Feeds-swallowed failure (no exception) is still reported as an error.
+   *
+   * Feeds catches a fetch failure / lock contention and queues a messenger
+   * error instead of throwing, so import() returns normally; the orchestrator
+   * must detect it from the messenger, or a refresh during a YouTube outage
+   * reports a clean import and stamps last-imported (review finding COR-1).
+   */
+  public function testFeedsSwallowedFailureIsDetected(): void {
+    $messenger = $this->messenger();
+    $videos = $this->createMock(FeedInterface::class);
+    $videos->method('id')->willReturn(self::NODE_FEED_ID);
+    $videos->method('getItemCount')->willReturn(15);
+    $videos->method('import')->willReturnCallback(static function () use ($messenger): void {
+      // Mirror FeedsExecutable::handleException on a fetch failure.
+      $messenger->addError('The feed could not be downloaded.');
+    });
+
+    $orchestrator = $this->orchestrator(
+      $this->feed(self::MEDIA_FEED_ID),
+      $videos,
+      [],
+      [],
+      $this->createMock(LoggerInterface::class),
+      $this->channel(),
+      NULL,
+      $messenger,
+    );
+    $report = $orchestrator->import($this->channel());
+
+    $this->assertNotNull($report['videos']['error'], 'A messenger-only Feeds failure is reported as an error.');
+    $this->assertNull($report['media']['error'], 'The clean media feed is not falsely marked failed.');
+  }
+
+  /**
    * Builds a minimal Feeds feed mock with an ID and item count.
    */
   private function feed(int $id, int $count = 15): FeedInterface {
@@ -252,7 +291,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
    * the given feed mocks; the node query/loadMultiple return the given stamp
    * targets — so import() drives the real orchestration logic end to end.
    */
-  private function orchestrator(FeedInterface $media, FeedInterface $videos, array $node_ids, array $nodes, LoggerInterface $logger, TermInterface $channel, ?LockBackendInterface $lock = NULL): EmpireImportOrchestrator {
+  private function orchestrator(FeedInterface $media, FeedInterface $videos, array $node_ids, array $nodes, LoggerInterface $logger, TermInterface $channel, ?LockBackendInterface $lock = NULL, ?MessengerInterface $messenger = NULL): EmpireImportOrchestrator {
     $feed_storage = $this->createMock(EntityStorageInterface::class);
     $feed_storage->method('load')->willReturnMap([
       [self::MEDIA_FEED_ID, $media],
@@ -262,6 +301,8 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
     $query = $this->createMock(QueryInterface::class);
     $query->method('accessCheck')->willReturnSelf();
     $query->method('condition')->willReturnSelf();
+    $query->method('sort')->willReturnSelf();
+    $query->method('range')->willReturnSelf();
     $query->method('execute')->willReturn($node_ids);
     $node_storage = $this->createMock(EntityStorageInterface::class);
     $node_storage->method('getQuery')->willReturn($query);
@@ -283,12 +324,89 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
     $time->method('getRequestTime')->willReturn(1700000000);
 
     $feed_instance_manager = new FeedInstanceManager($entity_type_manager, $state);
-    $thumbnail_upgrader = $this->createMock(ThumbnailUpgrader::class);
+    $thumbnail_upgrader = $this->createMock(ThumbnailUpgraderInterface::class);
     if ($lock === NULL) {
       $lock = $this->createMock(LockBackendInterface::class);
       $lock->method('acquire')->willReturn(TRUE);
     }
-    return new EmpireImportOrchestrator($entity_type_manager, $feed_instance_manager, $thumbnail_upgrader, $time, $logger, $lock);
+    return new EmpireImportOrchestrator($entity_type_manager, $feed_instance_manager, $thumbnail_upgrader, $time, $logger, $lock, $messenger ?? $this->messenger(), $this->createMock(StateInterface::class));
+  }
+
+  /**
+   * Cron post-process runs + advances state when the video feed advanced.
+   */
+  public function testCronPostProcessRunsWhenFeedAdvanced(): void {
+    $state = $this->createMock(StateInterface::class);
+    $state->method('get')->willReturn(1000);
+    $state->expects($this->once())->method('set')
+      ->with('empire_tools.cron_postprocess.' . self::CHANNEL_ID, 2000);
+    $this->runCron($state, 2000);
+  }
+
+  /**
+   * Cron post-process is skipped (no state write) when nothing new imported.
+   */
+  public function testCronPostProcessSkipsWhenNotAdvanced(): void {
+    $state = $this->createMock(StateInterface::class);
+    $state->method('get')->willReturn(3000);
+    $state->expects($this->never())->method('set');
+    $this->runCron($state, 2000);
+  }
+
+  /**
+   * Builds an orchestrator with one channel + video feed, and runs cron.
+   */
+  private function runCron(StateInterface $state, int $imported_time): void {
+    $videos = $this->createMock(FeedInterface::class);
+    $videos->method('getImportedTime')->willReturn($imported_time);
+    $videos->method('id')->willReturn(self::NODE_FEED_ID);
+    $feed_manager = $this->createMock(FeedInstanceManagerInterface::class);
+    $feed_manager->method('getFeeds')->willReturn([
+      'media' => $this->createMock(FeedInterface::class),
+      'videos' => $videos,
+    ]);
+
+    $channel = $this->createMock(TermInterface::class);
+    $channel->method('id')->willReturn(self::CHANNEL_ID);
+    $channel->method('hasField')->willReturn(FALSE);
+    $channel->method('set')->willReturnSelf();
+
+    $channel_storage = $this->createMock(EntityStorageInterface::class);
+    $channel_storage->method('loadByProperties')->willReturn([$channel]);
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('condition')->willReturnSelf();
+    $query->method('sort')->willReturnSelf();
+    $query->method('range')->willReturnSelf();
+    $query->method('execute')->willReturn([]);
+    $node_storage = $this->createMock(EntityStorageInterface::class);
+    $node_storage->method('getQuery')->willReturn($query);
+    $node_storage->method('loadMultiple')->willReturn([]);
+    $etm = $this->createMock(EntityTypeManagerInterface::class);
+    $etm->method('getStorage')->willReturnMap([
+      ['taxonomy_term', $channel_storage],
+      ['node', $node_storage],
+    ]);
+    $time = $this->createMock(TimeInterface::class);
+    $time->method('getRequestTime')->willReturn(1700000000);
+
+    (new EmpireImportOrchestrator(
+      $etm,
+      $feed_manager,
+      $this->createMock(ThumbnailUpgraderInterface::class),
+      $time,
+      $this->createMock(LoggerInterface::class),
+      $this->createMock(LockBackendInterface::class),
+      $this->messenger(),
+      $state,
+    ))->cronPostProcess();
+  }
+
+  /**
+   * An in-memory messenger (real, so deleteAll/addMessage behave as in prod).
+   */
+  private function messenger(): MessengerInterface {
+    return new Messenger(new FlashBag(), $this->createMock(KillSwitch::class));
   }
 
 }

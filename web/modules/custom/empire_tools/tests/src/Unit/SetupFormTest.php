@@ -16,7 +16,7 @@ use Drupal\empire_tools\Service\ChannelInputResolver;
 use Drupal\empire_tools\Service\EmpireImportOrchestrator;
 use Drupal\empire_tools\Service\EmpireSetupStatus;
 use Drupal\empire_tools\Service\FeedInstanceManager;
-use Drupal\empire_tools\Service\ThumbnailUpgrader;
+use Drupal\empire_tools\Service\ThumbnailUpgraderInterface;
 use Drupal\taxonomy\TermInterface;
 use Drupal\Tests\UnitTestCase;
 use GuzzleHttp\ClientInterface;
@@ -68,10 +68,12 @@ final class SetupFormTest extends UnitTestCase {
     $orchestrator = new EmpireImportOrchestrator(
       $entity_type_manager,
       $feed_instance_manager,
-      $this->createMock(ThumbnailUpgrader::class),
+      $this->createMock(ThumbnailUpgraderInterface::class),
       $this->createMock(TimeInterface::class),
       $this->createMock(LoggerInterface::class),
       $this->createMock(LockBackendInterface::class),
+      $this->createMock(MessengerInterface::class),
+      $this->createMock(StateInterface::class),
     );
 
     // The form's logger must record the failure.
@@ -115,10 +117,12 @@ final class SetupFormTest extends UnitTestCase {
     $orchestrator = new EmpireImportOrchestrator(
       $entity_type_manager,
       $feed_instance_manager,
-      $this->createMock(ThumbnailUpgrader::class),
+      $this->createMock(ThumbnailUpgraderInterface::class),
       $this->createMock(TimeInterface::class),
       $this->createMock(LoggerInterface::class),
       $this->createMock(LockBackendInterface::class),
+      $this->createMock(MessengerInterface::class),
+      $this->createMock(StateInterface::class),
     );
     $setup_status = new EmpireSetupStatus($entity_type_manager);
     $form = new SetupForm($resolver, $feed_instance_manager, $orchestrator, $setup_status, $this->createMock(LoggerInterface::class));

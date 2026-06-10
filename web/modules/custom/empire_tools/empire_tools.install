@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install + uninstall hooks for Empire Tools.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Deletes the per-channel State entries this module writes. They are runtime
+ * State (not config), so nothing else removes them on uninstall. Keys:
+ * - empire_tools.channel_feeds.<tid>    (FeedInstanceManager: term → feed ids)
+ * - empire_tools.cron_postprocess.<tid> (empire_tools_cron: last post-process)
+ */
+function empire_tools_uninstall(): void {
+  $state = \Drupal::state();
+  try {
+    $tids = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->getQuery()
+      ->accessCheck(FALSE)
+      ->condition('vid', 'empire_channel')
+      ->execute();
+  }
+  catch (\Throwable $e) {
+    // The vocabulary may already be gone; nothing more we can clean up safely.
+    return;
+  }
+  foreach ($tids as $tid) {
+    $state->delete('empire_tools.channel_feeds.' . $tid);
+    $state->delete('empire_tools.cron_postprocess.' . $tid);
+  }
+}

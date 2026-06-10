@@ -41,4 +41,13 @@ interface EmpireImportOrchestratorInterface {
    */
   public function postProcess(TermInterface $channel, int $node_feed_id, bool $success = TRUE): void;
 
+  /**
+   * Runs post-import processing for all channels on cron (gated + isolated).
+   *
+   * Only post-processes a channel whose video feed has imported something new
+   * since the last run; per-channel failures are caught so one cannot abort the
+   * rest. Honours the field_import_enabled pause toggle.
+   */
+  public function cronPostProcess(): void;
+
 }

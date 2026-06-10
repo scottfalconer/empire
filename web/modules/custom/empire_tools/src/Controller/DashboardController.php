@@ -9,7 +9,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Url;
-use Drupal\empire_tools\Service\EmpireSetupStatus;
+use Drupal\empire_tools\Service\EmpireSetupStatusInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -21,8 +21,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class DashboardController extends ControllerBase {
 
+  /**
+   * Auto-import cadence hint in seconds.
+   *
+   * Mirrors the empire_youtube_* feed types' import_period; the real cadence is
+   * driven by Feeds, not this value. Used only for the dashboard "next check".
+   */
+  private const AUTO_IMPORT_PERIOD = 3600;
+
   public function __construct(
-    private readonly EmpireSetupStatus $setupStatus,
+    private readonly EmpireSetupStatusInterface $setupStatus,
     private readonly DateFormatterInterface $dateFormatter,
     private readonly TimeInterface $time,
   ) {}
@@ -72,9 +80,9 @@ final class DashboardController extends ControllerBase {
       ? $this->dateFormatter->format($status['last_import'], 'short')
       : $this->t('Never');
 
-    // Auto-import cadence (Feeds import_period = 3600s). Show the next check
+    // Auto-import cadence (see self::AUTO_IMPORT_PERIOD). Show the next check
     // time only while it's still in the future, else just the hourly cadence.
-    $next_check = (int) ($status['last_import'] ?? 0) + 3600;
+    $next_check = (int) ($status['last_import'] ?? 0) + self::AUTO_IMPORT_PERIOD;
     $cadence = $next_check > $this->time->getRequestTime()
       ? $this->t('Checked automatically every hour — next check around @when.', [
         '@when' => $this->dateFormatter->format($next_check, 'short'),

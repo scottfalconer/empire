@@ -6,6 +6,7 @@ namespace Drupal\Tests\empire_tools\Unit;
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\empire_tools\Form\RefreshForm;
@@ -151,7 +152,14 @@ final class RefreshFormTest extends UnitTestCase {
     ?LoggerInterface $logger = NULL,
   ): RefreshForm {
     $storage = $this->createMock(EntityStorageInterface::class);
-    $storage->method('loadByProperties')->willReturn($channels);
+    $query = $this->createMock(QueryInterface::class);
+    $query->method('accessCheck')->willReturnSelf();
+    $query->method('condition')->willReturnSelf();
+    $query->method('sort')->willReturnSelf();
+    $query->method('range')->willReturnSelf();
+    $query->method('execute')->willReturn($channels ? ['1'] : []);
+    $storage->method('getQuery')->willReturn($query);
+    $storage->method('load')->willReturn($channels ? reset($channels) : NULL);
     $etm = $this->createMock(EntityTypeManagerInterface::class);
     $etm->method('getStorage')->willReturn($storage);
     $form = new RefreshForm(

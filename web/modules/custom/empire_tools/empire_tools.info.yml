@@ -3,10 +3,12 @@ type: module
 description: 'Onboarding and setup orchestration for the Empire video site template: channel resolution, feed provisioning, import orchestration, dashboard, and homepage composition.'
 package: Empire
 core_version_requirement: ^11
+configure: empire_tools.setup
 dependencies:
   - drupal:node
   - drupal:media
   - drupal:taxonomy
   - drupal:file
+  - drupal:views
   - feeds:feeds
   - canvas:canvas

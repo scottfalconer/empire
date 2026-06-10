@@ -26,6 +26,8 @@ services:
       - '@datetime.time'
       - '@logger.channel.empire_tools'
       - '@lock'
+      - '@messenger'
+      - '@state'
   empire_tools.setup_status:
     class: Drupal\empire_tools\Service\EmpireSetupStatus
     arguments:

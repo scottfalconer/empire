@@ -17,12 +17,20 @@ recipe, which enables this module and the companion `empire_theme`.
 
 ## Installation
 
+Empire Tools is the engine behind the **[`drupal/empire`](https://www.drupal.org/project/empire)**
+recipe. It expects the structure that recipe (plus `empire_theme`) provides — the
+`empire_video` content type, the `empire_channel` vocabulary, the two
+`empire_youtube_*` feed types, and the theme's SDC components — so the supported
+install is the recipe as a whole:
+
 ```
-composer require drupal/empire_tools
-drush en empire_tools
+composer require drupal/empire
+drush recipe empire
 ```
 
-(Applying the Empire recipe does both for you.)
+Enabling this module on its own (`drush en empire_tools`) is only meaningful as
+part of that recipe: on a site without the Empire structure the dashboard renders
+zeros and setup/refresh have nothing to provision.
 
 ## Usage
 
