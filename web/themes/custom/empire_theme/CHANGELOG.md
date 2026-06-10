@@ -2,22 +2,7 @@
 
 This project adheres to [Semantic Versioning](https://semver.org/).
 
-## 1.1.0 — 2026-06-09
-
-Design refresh (Claude Design handoff).
-
-- Accent-suffused theming: coral accent (`#ff3b5c`) with a `color-mix` tint
-  system (`--glow` / `--glow-soft` / `--accent-hi`), a suffused page backdrop,
-  button accent-glow, collection-tile rings, and an accent-suffused newsletter/
-  contact band. Accent text stays WCAG AA (5.65:1 on `--bg`).
-- Signature accent ticks before page/row titles and a rule after the hero eyebrow.
-- New **Hero motion** theme setting (Appearance → Settings → Empire): the hero is
-  a still poster by default (privacy-first, no pre-consent embed); optionally a
-  muted, looping autoplay preview (an owner-enabled §19/§24 divergence — see the
-  setting description). Implemented outside the hero SDC schema, so the recipe's
-  Canvas registration and the clean-install gate are unaffected.
-
-## 1.0.0 — 2026-06-09
+## 1.0.0 — 2026-06-10
 
 Initial release.
 
@@ -25,5 +10,12 @@ Initial release.
   collection rails, category tiles), view modes, and design tokens.
 - Renders `empire_video` nodes as cards, collection rails, and a featured hero;
   styles the listing/collection pages, setup forms, and editorial surfaces.
-- Self-hosted fonts (Manrope + Bricolage Grotesque), AA-accessible on the dark
-  palette, Lighthouse performance 100.
+- Accent-suffused theming: a coral accent with a `color-mix` tint system, a
+  suffused page backdrop, button accent-glow, and collection-tile rings. Accent
+  text is designed toward WCAG AA.
+- **Hero motion** theme setting (Appearance → Settings → Empire): the hero shows
+  a muted, looping autoplay preview by default — consent-gated, so it stays a
+  still poster until the visitor consents to YouTube via Klaro and never loads
+  external content before consent (§19); set it to **poster** to disable.
+- Self-hosted fonts (Manrope + Bricolage Grotesque); designed toward WCAG AA on
+  the dark palette and a Lighthouse performance target of 100 (re-run to confirm).

@@ -26,10 +26,15 @@
 .nav.scrolled { background: rgba(8, 8, 11, .86); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
 .nav::before {
   content: ""; position: absolute; inset: 0 0 -40px 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(180deg, rgba(0, 0, 0, .7), transparent);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .82), rgba(0, 0, 0, .42) 64%, transparent);
   opacity: 1; transition: opacity .3s;
 }
 .nav.scrolled::before { opacity: 0; }
+/* The unscrolled front-page nav floats over editor hero artwork: a text halo
+   (plus the ::before scrim) keeps links/brand legible regardless of the image
+   — image-independent AA, removed once .scrolled gives an opaque bar. */
+.nav-link, .brand-name { text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+.nav.scrolled .nav-link, .nav.scrolled .brand-name { text-shadow: none; }
 .brand { display: flex; align-items: center; gap: 11px; cursor: pointer; text-decoration: none; color: var(--text); }
 .brand-logo {
   width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;

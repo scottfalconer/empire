@@ -4,11 +4,12 @@ Streaming-style cinematic dark theme for the **Empire** video site template.
 Single-Directory Components (SDC), view modes, and design tokens — renders
 `empire_video` nodes as cards, collection rails, and a featured hero.
 
-Normally installed by the [Empire recipe](https://github.com/scottfalconer/empire).
+Normally installed by the [Empire recipe](https://www.drupal.org/project/empire).
 
 ## Requirements
 
-- Drupal `^11`
+- Drupal `^11.3` (the theme reads its hero-motion setting via the
+  `ThemeSettingsProvider` service, introduced in 11.3)
 
 ## Features
 
@@ -32,10 +33,10 @@ Normally installed by the [Empire recipe](https://github.com/scottfalconer/empir
 
 | Path | Contents |
 | --- | --- |
-| `components/` | SDC: badge, button, card, grid, heading, hero-billboard, image, section, slider |
+| `components/` | SDC: badge, button, card, grid, heading, hero-billboard, image, section, share-bar, slider, video-meta, video-stage |
 | `css/` | Design tokens + component styles (loaded via the `empire_theme/global` library) |
 | `templates/` | `page.html.twig` + node / views template overrides |
-| `js/nav.js` | Mobile navigation toggle |
+| `js/` | `nav.js` (mobile nav) + `hero-preview.js` (consent-gated hero preview) |
 | `fonts/` | Self-hosted Manrope + Bricolage Grotesque |
 | `empire_theme.theme` | Preprocessing — artwork override and page titles |
 

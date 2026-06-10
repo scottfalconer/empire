@@ -2,7 +2,7 @@ name: Empire
 type: theme
 base theme: false
 description: 'Streaming-style video site theme for Empire — SDC components, view modes, and design tokens. Renders empire_video nodes as cards, rails, and a cinematic hero.'
-core_version_requirement: ^11
+core_version_requirement: ^11.3
 libraries:
   - empire_theme/global
 # The chrome (nav + footer) is hardcoded in page.html.twig; the theme renders

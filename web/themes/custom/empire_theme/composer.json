@@ -3,9 +3,13 @@
     "type": "drupal-theme",
     "description": "Streaming-style video site theme for Empire — SDC components, view modes, and design tokens. Renders empire_video nodes as cards, rails, and a cinematic hero.",
     "keywords": ["Drupal", "Empire", "theme", "video", "cinematic"],
-    "homepage": "https://github.com/scottfalconer/empire",
+    "homepage": "https://www.drupal.org/project/empire_theme",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/empire_theme",
+        "source": "https://git.drupalcode.org/project/empire_theme"
+    },
     "license": "GPL-2.0-or-later",
     "require": {
-        "drupal/core": "^11"
+        "drupal/core": "^11.3"
     }
 }

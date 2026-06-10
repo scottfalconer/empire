@@ -6,4 +6,4 @@ empire_theme.settings:
     empire_hero_motion:
       type: string
       label: 'Homepage hero motion'
-      # 'autoplay' = consent-gated muted preview; 'static' = still poster only.
+      # 'autoplay' = consent-gated muted preview; 'poster' = still poster only.

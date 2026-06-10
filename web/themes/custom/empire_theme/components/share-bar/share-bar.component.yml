@@ -11,3 +11,9 @@ props:
       title: Share title
       examples:
         - "Why trains don't usually crash"
+# share-bar.js uses the global `once` + Drupal behaviors; an SDC's auto-generated
+# library has no dependencies without this block, so declare them explicitly.
+libraryOverrides:
+  dependencies:
+    - core/drupal
+    - core/once
