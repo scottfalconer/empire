@@ -83,6 +83,12 @@ function empire_theme_preprocess_page(array &$variables): void {
   $variables['empire_url_privacy'] = Url::fromUri('internal:/privacy')->toString();
   $variables['empire_url_terms'] = Url::fromUri('internal:/terms')->toString();
   $variables['empire_url_dashboard'] = Url::fromUri('internal:/admin/empire')->toString();
+  // The dashboard gear (header) links to /admin/empire, which requires the
+  // "access empire dashboard" permission. Only render it for users who hold
+  // that permission, so other signed-in users don't see a gear that 403s. Vary
+  // the page cache by permissions so the gear is shown/hidden correctly.
+  $variables['empire_can_access_dashboard'] = \Drupal::currentUser()->hasPermission('access empire dashboard');
+  $variables['#cache']['contexts'][] = 'user.permissions';
 
   // Page header (h1). Home has the hero; /watch carries the node's own h1.
   // Listing views, taxonomy term pages, AND webform pages (/form/{webform},
