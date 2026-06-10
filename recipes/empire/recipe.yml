@@ -43,13 +43,26 @@ config:
       simpleConfigUpdate:
         page.404: '/empire/page-not-found'
         page.403: '/empire/access-denied'
-    # The empire_collection term canonical IS the collection page. Empire's only
-    # public term pages are collections, so tune the core taxonomy_term view:
-    # drop the header (the page-head h1 names it — no redundant self-tile),
-    # exclude hidden videos, and add the §25 empty-collection state.
+    # Empire lists videos on taxonomy term pages (collections via field_collection,
+    # tags/channels via field_tags/field_channel) through the SHARED core
+    # taxonomy_term view. Two narrow, vocabulary-safe tweaks are applied — kept
+    # minimal so other vocabularies' term pages still render correctly:
+    #  - hide videos flagged "hidden" (§25), via an OR group that PRESERVES
+    #    non-video nodes: a tagged page has no field_source_status, so the group
+    #    keeps it (field is empty) instead of silently dropping it;
+    #  - a short, vocabulary-neutral empty-state message.
+    # The header is left at the core default (the page-head h1 from the theme
+    # names the term; the empire_collection self-tile is suppressed in full view
+    # mode), and the page-head h1 covers every vocabulary's term pages.
     views.view.taxonomy_term:
       simpleConfigUpdate:
-        'display.default.display_options.header': {  }
+        'display.default.display_options.filter_groups':
+          operator: AND
+          groups:
+            1: AND
+            2: OR
+        'display.default.display_options.filters.langcode.group': 1
+        'display.default.display_options.filters.status.group': 1
         'display.default.display_options.filters.field_source_status_value':
           id: field_source_status_value
           table: node__field_source_status
@@ -60,6 +73,17 @@ config:
           operator: not
           value:
             hidden: hidden
+          group: 2
+        'display.default.display_options.filters.field_source_status_null':
+          id: field_source_status_null
+          table: node__field_source_status
+          field: field_source_status_value
+          entity_type: node
+          entity_field: field_source_status
+          plugin_id: list_field
+          operator: empty
+          value: {  }
+          group: 2
         'display.default.display_options.empty.area_text_custom':
           id: area_text_custom
           table: views
@@ -69,5 +93,5 @@ config:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'No videos in this collection yet. Add videos to this collection to see them here.'
+          content: 'No videos here yet.'
           tokenize: false

@@ -82,7 +82,7 @@ main { width: 100%; }
 .view { margin-block: var(--empire-space-8); }
 .view-header, .view .view-content > h3, .views-row + .views-row { }
 
-/* Grid display (empire_video_grid, empire_collection_page) */
+/* Grid display (empire_video_grid + Views grids on term pages) */
 .views-view-grid,
 .view-empire-video-grid .view-content,
 .view-empire-collection-page .view-content {
