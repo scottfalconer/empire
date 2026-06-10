@@ -95,6 +95,27 @@ final class RefreshFormTest extends UnitTestCase {
   }
 
   /**
+   * A busy (locked) import says so, not "could not reach YouTube".
+   */
+  public function testSubmitWarnsWhenBusy(): void {
+    $orchestrator = $this->createMock(EmpireImportOrchestratorInterface::class);
+    $orchestrator->method('import')->willReturn([
+      'busy' => TRUE,
+      'media' => ['count' => 0, 'error' => 'busy'],
+      'videos' => ['count' => 0, 'error' => 'busy'],
+    ]);
+    $messenger = $this->createMock(MessengerInterface::class);
+    $messenger->expects($this->once())->method('addWarning')
+      ->with($this->callback(static fn ($m): bool => str_contains((string) $m, 'already running')));
+    $messenger->expects($this->never())->method('addStatus');
+
+    $form = $this->form([$this->channel()], $orchestrator);
+    $form->setMessenger($messenger);
+    $build = [];
+    $form->submitForm($build, new FormState());
+  }
+
+  /**
    * A thrown exception from import() is caught: error + redirect, no WSOD.
    *
    * The orchestrator's import() re-provisions feeds via getFeeds(), which can

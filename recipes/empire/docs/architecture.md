@@ -84,7 +84,16 @@ V1's UI is single-channel, but the data model is multi-channel-ready: one
 `empire_channel` term per channel, two feed instances per channel, the same two
 feed types for every channel, and `field_channel` on every `empire_video`. When
 more than one channel term exists, the dashboard, Refresh, and the public
-Subscribe link follow the most-recently-connected channel.
+Subscribe link follow the most-recently-connected channel, resolved as the
+highest-id `empire_channel` term (`EmpireSetupStatus::getConnectedChannel()`).
+
+This is a heuristic for the single-channel UI, not full active-channel state: it
+tracks first-run and switching to a *new* channel correctly, but reconnecting an
+*older* existing channel after a newer one keeps the newer term active (the older
+term's id is unchanged). Surfacing true multi-channel would replace the heuristic
+with explicit active-channel state — e.g. a `state` key written on connect and
+read by the status service + the theme — which is deliberately deferred while the
+UI stays single-channel.
 
 ## Roles and permissions
 

@@ -18,10 +18,10 @@ Normally installed by the [Empire recipe](https://github.com/scottfalconer/empir
   target of 100 — verified during development; re-run Lighthouse/axe to confirm
   on your own build and content.
 - **Hero motion** (theme setting → Appearance → Settings → Empire): the featured
-  hero is a still poster by default (privacy-first; the video loads only after
-  consent). Optionally switch it to a muted, looping autoplay preview — note that
-  loads YouTube before consent (an opt-in §19/§24 divergence; see the setting's
-  description).
+  hero shows a muted, looping autoplay preview by default — but it is
+  **consent-gated**: it stays a still poster until the visitor consents to
+  YouTube via Klaro, and never loads external content before consent (§19). Set
+  the option to **poster** to disable the preview entirely.
 - The chrome (nav + footer) lives in `page.html.twig`; the theme renders
   `page.content` only — no block regions (a single `content` region).
 - Styled setup forms, listing/collection pages, and editorial surfaces.

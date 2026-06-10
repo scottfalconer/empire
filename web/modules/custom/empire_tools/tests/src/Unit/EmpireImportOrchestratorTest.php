@@ -174,6 +174,7 @@ final class EmpireImportOrchestratorTest extends UnitTestCase {
     $orchestrator = $this->orchestrator($media, $videos, [], [], $this->createMock(LoggerInterface::class), $this->channel(), $lock);
     $report = $orchestrator->import($this->channel());
 
+    $this->assertTrue($report['busy'] ?? FALSE, 'A locked import is flagged busy (distinct from a YouTube error).');
     $this->assertNotNull($report['media']['error'], 'A busy import reports an error per feed.');
     $this->assertNotNull($report['videos']['error']);
     $this->assertSame(0, $report['media']['count']);

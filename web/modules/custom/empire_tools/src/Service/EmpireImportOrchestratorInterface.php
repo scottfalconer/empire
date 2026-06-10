@@ -23,6 +23,8 @@ interface EmpireImportOrchestratorInterface {
    * @return array
    *   ['media' => ['count' => int, 'error' => ?string],
    *    'videos' => ['count' => int, 'error' => ?string]].
+   *   A concurrent import that cannot acquire the lock returns the same shape
+   *   plus ['busy' => TRUE].
    */
   public function import(TermInterface $channel): array;
 

@@ -53,6 +53,8 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
    * @return array
    *   ['media' => ['count' => int, 'error' => ?string],
    *    'videos' => ['count' => int, 'error' => ?string]].
+   *   A concurrent import that cannot acquire the lock returns the same shape
+   *   plus ['busy' => TRUE].
    */
   public function import(TermInterface $channel): array {
     // Guard against a double-click, or an overlapping Refresh + hourly cron,
@@ -62,6 +64,7 @@ final class EmpireImportOrchestrator implements EmpireImportOrchestratorInterfac
     if (!$this->lock->acquire($lock_id, self::IMPORT_LOCK_TIMEOUT)) {
       $busy = 'An import is already running for this channel — please wait a moment and try again.';
       return [
+        'busy' => TRUE,
         'media' => ['count' => 0, 'error' => $busy],
         'videos' => ['count' => 0, 'error' => $busy],
       ];

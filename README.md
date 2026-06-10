@@ -52,7 +52,7 @@ Starting from a Drupal CMS site:
   artwork — all from the video edit form; the import never clobbers your changes.
 - **Privacy-first:** YouTube embeds are consent-gated (Klaro) and thumbnails are
   stored locally (no third-party hotlinking).
-- Built to **WCAG AA**, with rich SEO (meta description, Open Graph, Twitter
+- Designed toward **WCAG AA**, with rich SEO (meta description, Open Graph, Twitter
   cards, JSON-LD `VideoObject`) out of the box.
 
 ## Continuous integration

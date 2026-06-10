@@ -174,6 +174,16 @@ final class SetupForm extends FormBase {
       return;
     }
 
+    // A concurrent import already holds the lock — say so plainly rather than
+    // implying YouTube is unreachable.
+    if (!empty($report['busy'])) {
+      $this->messenger()->addWarning($this->t('An import is already running for @channel. Please wait a moment and try again.', [
+        '@channel' => $channel->label(),
+      ]));
+      $form_state->setRedirect('empire_tools.dashboard');
+      return;
+    }
+
     $count = $report['videos']['count'];
     $name = $channel->label();
     $had_error = !empty($report['media']['error']) || !empty($report['videos']['error']);

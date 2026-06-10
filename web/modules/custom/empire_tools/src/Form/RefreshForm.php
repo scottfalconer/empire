@@ -93,7 +93,10 @@ final class RefreshForm extends FormBase {
       $form_state->setRedirect('empire_tools.dashboard');
       return;
     }
-    if ($report['media']['error'] || $report['videos']['error']) {
+    if (!empty($report['busy'])) {
+      $this->messenger()->addWarning($this->t('An import is already running for this channel. Please wait a moment and try again.'));
+    }
+    elseif ($report['media']['error'] || $report['videos']['error']) {
       $this->messenger()->addWarning($this->t('Refresh could not reach YouTube right now. Please try again shortly.'));
     }
     else {
