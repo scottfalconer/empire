@@ -54,8 +54,10 @@ config:
     # The header is left at the core default (the page-head h1 from the theme
     # names the term; the empire_collection self-tile is suppressed in full view
     # mode), and the page-head h1 covers every vocabulary's term pages.
+    # setProperties (not simpleConfigUpdate): taxonomy_term is a config ENTITY,
+    # for which simpleConfigUpdate is deprecated in 11.2 and throws in D12.
     views.view.taxonomy_term:
-      simpleConfigUpdate:
+      setProperties:
         'display.default.display_options.filter_groups':
           operator: AND
           groups:

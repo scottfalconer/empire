@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- **Drupal CMS 2.x** (Drupal core ^11.x) on a standard LAMP/LEMP or DDEV stack.
+- **Drupal CMS 2.x** (Drupal core `^11.3`) on a standard LAMP/LEMP or DDEV stack.
 - The baseline recipes (`drupal_cms_site_template_base`,
   `drupal_cms_content_type_base`, `drupal_cms_forms`) and the `feeds` module —
   all pulled in automatically when the Empire recipe is applied.

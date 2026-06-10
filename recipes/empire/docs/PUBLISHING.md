@@ -17,11 +17,12 @@ then a docs update.
 
 ## Current status
 
-- **Not yet published.** `recipes/empire/composer.json` requires
-  `drupal/empire_theme:^1.0` and `drupal/empire_tools:^1.0`, which only resolve
-  once those packages exist on drupal.org's Composer endpoint
-  (`https://packages.drupal.org/8`).
-- Until then, install by copying the three directories (repo README → "Install").
+- **Module + theme published at 1.0.0.** `drupal/empire_tools` and
+  `drupal/empire_theme` are live on drupal.org, so the recipe's `^1.0`
+  constraints now resolve from the Composer endpoint
+  (`https://packages.drupal.org/8`). Steps 1–2 below are done.
+- **The recipe project is the last to publish** (step 3). Until its release node
+  exists, install from source (repo README → "From source").
 
 ## drupal.org project types
 
@@ -47,8 +48,8 @@ the type → set the machine name → **Save**, then follow the project's **Vers
 control** tab to push the code. Push the **contents** of each directory to the
 repo root (so e.g. `empire_tools.info.yml` is at the repo root, not under
 `web/modules/custom/`). drupal.org adds the `version:`/`project:`/`datestamp:`
-`.info.yml` keys and a `LICENSE.txt` automatically when it packages a release —
-do not commit them.
+`.info.yml` keys automatically when it packages a release — do not commit those.
+(A committed `LICENSE.txt` is fine; the packaged release includes it either way.)
 
 ### 1. `empire_tools` — Module project
 1. Add project → **Module** → machine name `empire_tools` → Save.
@@ -62,8 +63,9 @@ do not commit them.
 
 ### 3. `empire` — General project (the recipe)
 1. Add project → **General project** → machine name `empire` → Save.
-2. Push the contents of `recipes/empire/` **excluding the AI-internal files**
-   (`AGENTS.md` and `docs/ai/`), which are not part of the shipped recipe.
+2. Push the contents of `recipes/empire/` **excluding the monorepo-only files**
+   (`AGENTS.md`, `docs/ai/`, and `docs/validation.md` — an internal CI checklist
+   whose commands reference monorepo-root paths), which are not shipped recipe.
 3. Tag **`1.0.0`** and create the release node. The recipe's `composer.json`
    pins `drupal/empire_theme:^1.0` + `drupal/empire_tools:^1.0`, so their `1.0.0`
    releases (steps 1–2) satisfy it.

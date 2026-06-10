@@ -28,24 +28,26 @@ editable video pages — without the site owner needing to understand Drupal.
 
 ## Install
 
+```bash
+composer require drupal/empire
+drush recipe empire
+drush cache:rebuild
+```
+
 Empire **composes** the `drupal_cms_site_template_base` baseline, so applying the
-recipe on a minimal site builds everything. Under DDEV, `drush` runs from the
-docroot, so pass the absolute in-container path to the recipe:
+recipe on a minimal site builds everything: the baseline, the `empire_theme`
+theme + `empire_tools` module, the content model and Views, and the composed
+homepage. (See `docs/setup.md` for the from-zero clean install.)
+
+### From source (development)
+
+Working from a clone of the monorepo? Under DDEV `drush` runs from the docroot,
+so apply the recipe by its absolute in-container path:
 
 ```bash
 ddev drush recipe /var/www/html/recipes/empire
 ddev drush cache:rebuild
 ```
-
-This applies the baseline, installs the theme + tools, builds the content model
-and Views, and composes the homepage. (See `docs/setup.md` for the from-zero
-clean install.)
-
-Empire isn't on drupal.org yet, so it installs from source — copy the three
-directories into your site and apply the recipe by path (above). Once the
-packages are published, `composer require drupal/empire` + `drush recipe empire`
-will work with no code change; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for
-the maintainer publishing plan.
 
 ## Use it
 
@@ -54,6 +56,15 @@ the maintainer publishing plan.
 3. Click **Build my site**. Empire resolves the channel, provisions the feeds,
    imports recent videos, and you are done.
 4. Manage everything from the **`/admin/empire`** dashboard.
+
+## Roles & trust
+
+Applying the recipe grants the standard **content_editor** role the Empire
+permissions — including *configure Empire channel* and *refresh Empire imports*,
+which make outbound requests to YouTube and create content in bulk (both are
+flagged restrict-access). For a multi-author or untrusted-editor site, move those
+two permissions to an admin/site-manager role; see
+[`docs/architecture.md`](docs/architecture.md) for the full trust rationale.
 
 ## Documentation
 
