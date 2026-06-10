@@ -27,13 +27,20 @@ function empire_theme_preprocess_page(array &$variables): void {
   $variables['empire_site_name'] = $name;
   $variables['empire_site_initial'] = mb_substr($name, 0, 1);
 
-  // Subscribe → first connected channel's YouTube URL (best effort).
+  // Subscribe → most recently connected channel's YouTube URL (best effort).
   $variables['empire_subscribe_url'] = '';
   $variables['empire_channel_label'] = '';
   try {
     $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')
       ->loadByProperties(['vid' => 'empire_channel']);
-    $term = $terms ? reset($terms) : NULL;
+    // Most recently connected channel wins (highest term id), so Subscribe
+    // matches the dashboard after "connect a different channel" (R2).
+    $term = NULL;
+    foreach ($terms as $candidate) {
+      if ($term === NULL || (int) $candidate->id() > (int) $term->id()) {
+        $term = $candidate;
+      }
+    }
     if ($term && $term->hasField('field_youtube_channel_url') && !$term->get('field_youtube_channel_url')->isEmpty()) {
       $item = $term->get('field_youtube_channel_url')->first();
       // Sanitize the stored link URI before it reaches the Subscribe href:

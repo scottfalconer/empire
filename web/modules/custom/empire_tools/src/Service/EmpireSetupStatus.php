@@ -17,15 +17,22 @@ final class EmpireSetupStatus {
   ) {}
 
   /**
-   * Returns the single connected channel, or NULL before setup.
+   * Returns the most-recently-connected channel, or NULL before setup.
    *
-   * V1 is single-channel in the UI; the first channel wins.
+   * V1 is single-channel in the UI, but "connect a different channel" creates a
+   * second empire_channel term; the newest term (highest id) is the active one,
+   * so the dashboard, Refresh, and the public Subscribe link all agree on the
+   * channel connected last.
    */
   public function getConnectedChannel(): ?TermInterface {
     $channels = $this->entityTypeManager->getStorage('taxonomy_term')->loadByProperties([
       'vid' => 'empire_channel',
     ]);
-    return $channels ? reset($channels) : NULL;
+    if (!$channels) {
+      return NULL;
+    }
+    usort($channels, static fn(TermInterface $a, TermInterface $b): int => (int) $b->id() <=> (int) $a->id());
+    return reset($channels);
   }
 
   /**

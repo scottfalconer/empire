@@ -125,4 +125,22 @@ final class EmpireSetupStatusTest extends KernelTestBase {
     $this->assertSame(0, $status['media_count']);
   }
 
+  /**
+   * After connecting a different channel, the newest term is the active one.
+   *
+   * "Connect a different channel" creates a second empire_channel term; the
+   * dashboard/Refresh/Subscribe must follow the most-recently-connected channel
+   * (highest id), not the first one created (review finding R2).
+   */
+  public function testMostRecentlyConnectedChannelWins(): void {
+    $first = Term::create(['vid' => 'empire_channel', 'name' => 'Channel A']);
+    $first->save();
+    $second = Term::create(['vid' => 'empire_channel', 'name' => 'Channel B']);
+    $second->save();
+
+    $this->assertGreaterThan((int) $first->id(), (int) $second->id());
+    $this->assertSame('Channel B', $this->status->getConnectedChannel()->label());
+    $this->assertSame('Channel B', $this->status->getStatus()['channel_name']);
+  }
+
 }
