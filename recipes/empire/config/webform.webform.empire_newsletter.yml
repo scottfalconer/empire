@@ -11,7 +11,24 @@ id: empire_newsletter
 title: 'Newsletter signup'
 description: 'Audience capture for the Empire video site.'
 categories: {  }
-elements: "intro:\n  '#type': processed_text\n  '#text': 'Get new videos in your inbox. No spam, unsubscribe anytime.'\n  '#format': plain_text\nemail:\n  '#type': email\n  '#title': 'Email address'\n  '#required': true\n  '#placeholder': you@example.com\n  '#autocomplete': email\nconsent:\n  '#type': checkbox\n  '#title': 'I agree to receive email updates and accept the privacy policy.'\n  '#required': true\nactions:\n  '#type': webform_actions\n  '#submit__label': 'Sign up'"
+elements: |-
+  intro:
+    '#type': processed_text
+    '#text': 'Get new videos in your inbox. No spam, unsubscribe anytime.'
+    '#format': plain_text
+  email:
+    '#type': email
+    '#title': 'Email address'
+    '#required': true
+    '#placeholder': you@example.com
+    '#autocomplete': email
+  consent:
+    '#type': checkbox
+    '#title': 'I agree to receive email updates and accept the privacy policy.'
+    '#required': true
+  actions:
+    '#type': webform_actions
+    '#submit__label': 'Sign up'
 css: ''
 javascript: ''
 settings:
@@ -64,6 +81,43 @@ access:
     roles: {  }
     users: {  }
     permissions: {  }
-handlers: {  }
+handlers:
+  notify_owner:
+    id: email
+    handler_id: notify_owner
+    label: 'Notify owner of signup'
+    notes: ''
+    status: true
+    conditions: {  }
+    weight: null
+    settings:
+      states:
+        - completed
+      to_mail: '[site:mail]'
+      to_options: {  }
+      bcc_mail: ''
+      bcc_options: {  }
+      cc_mail: ''
+      cc_options: {  }
+      from_mail: _default
+      from_options: {  }
+      from_name: _default
+      reply_to: ''
+      return_path: ''
+      sender_mail: ''
+      sender_name: ''
+      subject: 'New newsletter signup on [site:name]'
+      body: 'A visitor signed up for your newsletter: [webform_submission:values:email:raw]'
+      excluded_elements: {  }
+      ignore_access: false
+      exclude_empty: true
+      exclude_empty_checkbox: false
+      exclude_attachments: false
+      html: true
+      attachments: false
+      twig: false
+      theme_name: ''
+      langcode: ''
+      parameters: {  }
+      debug: false
 variants: {  }
-
