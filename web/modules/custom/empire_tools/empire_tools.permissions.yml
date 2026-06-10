@@ -10,3 +10,4 @@ configure empire channel:
 refresh empire imports:
   title: 'Refresh Empire imports'
   description: 'Re-run the import to fetch new videos.'
+  restrict access: true

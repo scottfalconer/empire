@@ -71,4 +71,26 @@ static markup.
 
 V1's UI is single-channel, but the data model is multi-channel-ready: one
 `empire_channel` term per channel, two feed instances per channel, the same two
-feed types for every channel, and `field_channel` on every `empire_video`.
+feed types for every channel, and `field_channel` on every `empire_video`. When
+more than one channel term exists, the dashboard, Refresh, and the public
+Subscribe link follow the most-recently-connected channel.
+
+## Roles and permissions
+
+The recipe grants the standard `content_editor` role the Empire-specific
+permissions — *access Empire dashboard*, *configure Empire channel*, and
+*refresh Empire imports* — plus create/edit/delete for `empire_video` content.
+This is a deliberate trust decision: an editor can connect a channel and refresh
+imports without needing full administrator access.
+
+`configure Empire channel` and `refresh Empire imports` are operational — they
+make outbound HTTP requests to YouTube and create content in bulk — so both are
+flagged `restrict access: true` (Drupal shows a security warning for them on the
+permissions page). The channel lookup is SSRF-hardened: a YouTube-only host
+allow-list, a request timeout, a redirect cap, and a response-size cap (see
+`ChannelInputResolver`).
+
+To tighten this for a multi-author or untrusted-editor site, revoke *configure
+Empire channel* and *refresh Empire imports* from `content_editor` and grant
+them to a dedicated site-manager/admin role instead; the curate permissions
+(create/edit/delete `empire_video`) can stay with editors.
