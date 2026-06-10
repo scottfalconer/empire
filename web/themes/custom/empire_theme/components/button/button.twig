@@ -19,5 +19,8 @@
    links or focusable href="#" no-ops. Classes merged via the Attribute API so
    Canvas/contextual/admin attributes flow through the root element. #}
 {% if label and url %}
-  <a{{ attributes.addClass(['btn', vclass, sclass]|filter(c => c)) }} href="{{ url }}">{{ label }}</a>
+  {# Self-contained href guard (R13): reject javascript:/data:/protocol-relative. #}
+  {%- set _u = url|default('#') -%}
+  {%- set safe_url = (_u matches '~^(https?://|[/#?])~i' and not (_u starts with '//') and not (_u starts with '/\\')) ? _u : '#' -%}
+  <a{{ attributes.addClass(['btn', vclass, sclass]|filter(c => c)) }} href="{{ safe_url }}">{{ label }}</a>
 {% endif %}

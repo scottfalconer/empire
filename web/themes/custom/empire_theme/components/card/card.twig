@@ -9,9 +9,12 @@
  */
 #}
 <article{{ (attributes ?? create_attribute()).addClass('empire-card') }}>
+  {# Self-contained href guard (R13): reject javascript:/data:/protocol-relative. #}
+  {%- set _u = url|default('#') -%}
+  {%- set safe_url = (_u matches '~^(https?://|[/#?])~i' and not (_u starts with '//') and not (_u starts with '/\\')) ? _u : '#' -%}
   {# Give the wrapping link a clean accessible name (badge + title) so the date
      and decorative artwork don't get folded into a noisy link label. #}
-  <a class="empire-card__link" href="{{ url|default('#') }}"{% if title %} aria-label="{{ badge ? badge ~ ': ' ~ title : title }}"{% endif %}>
+  <a class="empire-card__link" href="{{ safe_url }}"{% if title %} aria-label="{{ badge ? badge ~ ': ' ~ title : title }}"{% endif %}>
     <div class="empire-card__media">
       {% if image_src %}
         {# Decorative when the title labels the link (avoids announcing it twice);

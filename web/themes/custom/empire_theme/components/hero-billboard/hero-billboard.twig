@@ -27,8 +27,11 @@
     <h1 class="empire-hero__title">{{ title }}</h1>
     {% if description %}<p class="empire-hero__desc">{{ description }}</p>{% endif %}
     {% if url %}
+      {# Self-contained href guard (R13): reject javascript:/data:/protocol-relative. #}
+      {%- set _u = url|default('#') -%}
+      {%- set safe_url = (_u matches '~^(https?://|[/#?])~i' and not (_u starts with '//') and not (_u starts with '/\\')) ? _u : '#' -%}
       <div class="empire-hero__actions">
-        <a class="btn btn-light btn-lg" href="{{ url }}">
+        <a class="btn btn-light btn-lg" href="{{ safe_url }}">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
           {{ cta_label|default('Watch now') }}
         </a>
