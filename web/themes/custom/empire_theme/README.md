@@ -14,9 +14,9 @@ Normally installed by the [Empire recipe](https://github.com/scottfalconer/empir
 
 - Cinematic dark palette with an accent-suffused coral accent (the channel's
   colour washes the UI via `color-mix` glows/tints); self-hosted fonts (Manrope +
-  Bricolage Grotesque). Built to WCAG AA and a Lighthouse performance target of
-  100 — verified during development; re-run Lighthouse/axe to confirm on your
-  own build and content.
+  Bricolage Grotesque). Designed toward WCAG AA and a Lighthouse performance
+  target of 100 — verified during development; re-run Lighthouse/axe to confirm
+  on your own build and content.
 - **Hero motion** (theme setting → Appearance → Settings → Empire): the featured
   hero is a still poster by default (privacy-first; the video loads only after
   consent). Optionally switch it to a muted, looping autoplay preview — note that
