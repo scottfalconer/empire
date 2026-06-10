@@ -1,0 +1,94 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.empire_video.field_content
+    - field.field.node.empire_video.field_source_description
+    - field.field.node.empire_video.field_source_guid
+    - field.field.node.empire_video.field_source_published
+    - field.field.node.empire_video.field_source_title
+    - field.field.node.empire_video.field_source_url
+    - field.field.node.empire_video.field_video
+    - node.type.empire_video
+  module:
+    - node
+id: empire_youtube_videos
+label: 'YouTube → Empire Video node'
+description: 'Creates editable empire_video nodes and attaches the matching Remote Video media. Empire Tools runs this feed second (after the media feed).'
+help: ''
+import_period: 3600
+import_period_per_feed: false
+fetcher: http
+fetcher_configuration:
+  auto_detect_feeds: false
+  use_pubsubhubbub: false
+  always_download: false
+  fallback_hub: ''
+  request_timeout: 30
+parser: syndication
+parser_configuration: {  }
+processor: 'entity:node'
+processor_configuration:
+  values:
+    type: empire_video
+  langcode: en
+  insert_new: 1
+  update_existing: 0
+  update_non_existent: _keep
+  skip_hash_check: false
+  skip_validation: false
+  skip_validation_types: {  }
+  authorize: false
+  revision: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 1
+custom_sources: {  }
+mappings:
+  -
+    target: title
+    map:
+      value: title
+    settings: {  }
+  -
+    target: field_source_title
+    map:
+      value: title
+    settings: {  }
+  -
+    target: field_content
+    map:
+      value: description
+    settings:
+      format: content_format
+  -
+    target: field_source_description
+    map:
+      value: description
+    settings:
+      format: plain_text
+  -
+    target: field_source_url
+    map:
+      value: url
+    settings: {  }
+  -
+    target: field_video
+    map:
+      target_id: url
+    settings:
+      reference_by: field_media_oembed_video
+      autocreate: 0
+  -
+    target: field_source_guid
+    map:
+      value: guid
+    settings: {  }
+    unique:
+      value: '1'
+  -
+    target: field_source_published
+    map:
+      value: timestamp
+    settings: {  }
+

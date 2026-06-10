@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_youtube_handle
+    - taxonomy.vocabulary.empire_channel
+id: taxonomy_term.empire_channel.field_youtube_handle
+field_name: field_youtube_handle
+entity_type: taxonomy_term
+bundle: empire_channel
+label: 'YouTube handle'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
+

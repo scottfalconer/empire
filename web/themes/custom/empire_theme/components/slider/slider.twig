@@ -1,0 +1,7 @@
+{# Empire slider/rail — horizontal streaming row. Native scroll = keyboard reachable. #}
+<div class="empire-rail">
+  {% if title %}<h3 class="empire-rail__title">{{ title }}</h3>{% endif %}
+  <div class="empire-rail__track" tabindex="0" role="region" aria-label="{{ title|default('Video rail'|t) }}">
+    {% block items %}{% endblock %}
+  </div>
+</div>

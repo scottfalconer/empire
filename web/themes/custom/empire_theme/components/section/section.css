@@ -1,0 +1,39 @@
+/**
+ * Empire section — contained page section (default) or a rounded gradient CTA
+ * band (surface), re-skinned to the design's newsletter/CTA band (empire.css).
+ */
+.empire-section { margin-block: 38px; }
+.empire-section__inner {
+  max-width: var(--empire-container);
+  margin-inline: auto;
+  padding-inline: clamp(18px, 4vw, 52px);
+}
+
+/* Surface = the design's CTA/newsletter band: gutter-contained, rounded,
+   gradient, inset hairline border, heading left + action right. */
+.empire-section--surface { margin-block: 18px; }
+.empire-section--surface .empire-section__inner {
+  max-width: none;
+  margin-inline: clamp(18px, 4vw, 52px);
+  padding: 36px clamp(22px, 4vw, 44px);
+  /* Design refresh: the one intentionally accent-suffused surface on the page —
+     the channel accent glows in from the corners over the base gradient, with an
+     accent-tinted hairline ring. */
+  background:
+    radial-gradient(90% 160% at 92% -20%, var(--glow), transparent 60%),
+    radial-gradient(60% 120% at 0% 120%, var(--glow-soft), transparent 60%),
+    linear-gradient(100deg, var(--bg-2), var(--bg-1));
+  border-radius: var(--r-panel);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 22%, var(--line));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+/* The band's eyebrow reads in the lightened accent (design .nl-ey). */
+.empire-section--surface .empire-heading__eyebrow { color: var(--accent-hi); }
+.empire-section--surface .empire-heading { margin-bottom: 0; }
+.empire-section--surface .empire-section__content { flex: 0 0 auto; }
+/* CTA band heading is the larger section size (design .nl-copy h2 = 28px). */
+.empire-section--surface .empire-heading__text { font-size: 28px; }

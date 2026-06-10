@@ -1,0 +1,24 @@
+/**
+ * Empire video/collection grids — responsive CSS grid (design .grid).
+ *
+ * /videos and /collection/x use the unformatted list style, same shape as the
+ * homepage rails (.views-element-container > div.js-view-dom-id > .views-row >
+ * .empire-card). On non-front pages we lay the card rows out as an auto-fill grid
+ * (the front page rail-ifies them instead — views.css).
+ */
+.empire-main:not(.is-front) .views-element-container > div:has(> .views-row .empire-card) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px 14px;
+  padding: 8px clamp(18px, 4vw, 52px) 80px;
+}
+.empire-main:not(.is-front) .views-element-container > div:has(> .views-row .empire-card) > .views-row {
+  min-width: 0;
+}
+
+/* Empty view (no results — e.g. an empty collection's §25 text): give it the
+   page gutter so it aligns under the page-head h1 instead of sitting flush-left. */
+.empire-main:not(.is-front) .views-element-container > div:not(:has(.views-row)) {
+  padding: 4px clamp(18px, 4vw, 52px) 80px;
+  color: var(--muted);
+}

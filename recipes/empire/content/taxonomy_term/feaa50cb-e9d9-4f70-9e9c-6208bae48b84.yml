@@ -1,0 +1,23 @@
+_meta:
+  version: '1.0'
+  entity_type: taxonomy_term
+  uuid: feaa50cb-e9d9-4f70-9e9c-6208bae48b84
+  bundle: empire_collection
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  name:
+    -
+      value: Shorts
+  weight:
+    -
+      value: 0
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null

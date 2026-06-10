@@ -1,0 +1,9 @@
+dashboard:
+  css:
+    theme:
+      css/dashboard.css: {}
+
+setup:
+  css:
+    theme:
+      css/setup.css: {}

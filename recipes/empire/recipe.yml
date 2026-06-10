@@ -1,0 +1,40 @@
+name: Empire
+description: 'Paste your YouTube channel. Empire builds your video site. Turns a YouTube channel into a streaming-style video site using Feeds ingestion, Remote Video media, and editorial empire_video nodes.'
+type: Site
+recipes:
+  # The Drupal CMS "Blank" baseline (SPEC §4) — admin UI, authentication, media
+  # (incl. the remote_video media type Empire imports into), privacy/consent
+  # (§19), SEO, and HTML email. Empire is a Site template built ON this
+  # foundation; composing it here makes the recipe self-contained, so a
+  # marketplace `composer require drupal/empire` + `drush recipe empire` (or an
+  # installer-selected Empire) builds the full site instead of silently
+  # depending on the baseline having been applied first. See DEVIATIONS.md for
+  # the Site-on-Site rationale.
+  - drupal_cms_site_template_base
+  # Shared content-type foundations Empire's empire_video reuses: the
+  # field_content body field + format, field_tags + the tags vocabulary, the
+  # content_editor role, and pathauto. (Not pulled in by the baseline above.)
+  - drupal_cms_content_type_base
+  # Contact form + webform tooling + anti-spam (SPEC §17).
+  - drupal_cms_forms
+install:
+  # Core Help, so editors can reach the Empire guidance at Admin → Help (hook_help).
+  - help
+  - feeds
+  - empire_theme
+  - empire_tools
+config:
+  strict: false
+  actions:
+    system.theme:
+      simpleConfigUpdate:
+        default: empire_theme
+    user.role.content_editor:
+      grantPermissions:
+        - 'access empire dashboard'
+        - 'configure empire channel'
+        - 'refresh empire imports'
+        # Curate the imported videos (title, artwork, featured, collection).
+        - 'create empire_video content'
+        - 'edit any empire_video content'
+        - 'delete any empire_video content'

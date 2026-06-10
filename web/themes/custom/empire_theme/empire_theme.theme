@@ -1,0 +1,315 @@
+<?php
+
+/**
+ * @file
+ * Theme hooks for Empire.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
+use Drupal\media\MediaInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_preprocess_HOOK() for the page (app shell chrome).
+ *
+ * Supplies the cinematic nav + footer with the site name, the connected
+ * channel's Subscribe URL, and the active primary-nav item. Presentation only —
+ * reads existing config/content, changes nothing.
+ */
+function empire_theme_preprocess_page(array &$variables): void {
+  $name = (string) \Drupal::config('system.site')->get('name');
+  $name = $name !== '' ? $name : 'Empire';
+  $variables['empire_site_name'] = $name;
+  $variables['empire_site_initial'] = mb_substr($name, 0, 1);
+
+  // Subscribe → first connected channel's YouTube URL (best effort).
+  $variables['empire_subscribe_url'] = '';
+  $variables['empire_channel_label'] = '';
+  try {
+    $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'empire_channel']);
+    $term = $terms ? reset($terms) : NULL;
+    if ($term && $term->hasField('field_youtube_channel_url') && !$term->get('field_youtube_channel_url')->isEmpty()) {
+      $item = $term->get('field_youtube_channel_url')->first();
+      $variables['empire_subscribe_url'] = $item->uri ?? $item->value ?? '';
+      $variables['empire_channel_label'] = $term->label();
+    }
+  }
+  catch (\Throwable $e) {
+    // Channel vocabulary absent (pre-install) — leave Subscribe hidden.
+  }
+  $variables['#cache']['tags'][] = 'taxonomy_term_list:empire_channel';
+
+  // Active primary-nav item from the current alias.
+  $active = NULL;
+  if (!empty($variables['is_front'])) {
+    $active = 'home';
+  }
+  else {
+    $path = \Drupal::service('path.current')->getPath();
+    $alias = \Drupal::service('path_alias.manager')->getAliasByPath($path);
+    if (str_starts_with($alias, '/videos')) {
+      $active = 'videos';
+    }
+    elseif (str_starts_with($alias, '/collection')) {
+      $active = 'collections';
+    }
+  }
+  $variables['empire_active'] = $active;
+  $variables['#cache']['contexts'][] = 'url.path';
+
+  // Nav/footer destinations (internal paths → resolved URLs).
+  $variables['empire_url_videos'] = Url::fromUri('internal:/videos')->toString();
+  $variables['empire_url_collections'] = Url::fromUri('internal:/collections')->toString();
+  $variables['empire_url_contact'] = Url::fromUri('internal:/form/contact-form')->toString();
+  $variables['empire_url_dashboard'] = Url::fromUri('internal:/admin/empire')->toString();
+
+  // Page header (h1). Home has the hero; /watch carries the node's own h1.
+  // Listing views, collection terms, AND webform pages (/form/{webform}, which
+  // otherwise have no h1 on this blockless theme) get a page-head h1.
+  $variables['empire_page_title'] = '';
+  $variables['empire_page_desc'] = '';
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  $path = \Drupal::service('path.current')->getPath();
+  if (preg_match('#^/collection/(\d+)$#', $path, $m)
+    && ($term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($m[1]))) {
+    // Collection detail → the collection name + description.
+    $variables['empire_page_title'] = $term->label();
+    $variables['empire_page_desc'] = trim(strip_tags((string) $term->getDescription()));
+  }
+  elseif (in_array($active, ['videos', 'collections'], TRUE) || $route_name === 'entity.webform.canonical') {
+    // /videos, /collections → view title; /form/{webform} → the webform label.
+    $route = \Drupal::routeMatch()->getRouteObject();
+    if ($route) {
+      $title = \Drupal::service('title_resolver')->getTitle(\Drupal::request(), $route);
+      if (is_array($title)) {
+        $title = \Drupal::service('renderer')->renderInIsolation($title);
+      }
+      $variables['empire_page_title'] = (string) $title;
+    }
+  }
+  elseif ($route_name === 'entity.node.canonical') {
+    // Standard pages (About/Privacy/Terms) get a page-head h1; empire_video
+    // detail pages carry their own h1 in the full-view template.
+    $node = \Drupal::routeMatch()->getParameter('node');
+    if ($node instanceof NodeInterface && $node->bundle() === 'page') {
+      $variables['empire_page_title'] = $node->label();
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for taxonomy terms.
+ *
+ * Supplies the collection tile with its published-video count (shown only when
+ * > 0, so empty collections don't read "0 videos"). Presentation only.
+ */
+function empire_theme_preprocess_taxonomy_term(array &$variables): void {
+  $term = $variables['term'] ?? NULL;
+  if (!$term || $term->bundle() !== 'empire_collection') {
+    return;
+  }
+  try {
+    $variables['empire_collection_count'] = (int) \Drupal::entityQuery('node')
+      ->accessCheck(TRUE)
+      ->condition('type', 'empire_video')
+      ->condition('status', 1)
+      ->condition('field_collection', $term->id())
+      ->count()
+      ->execute();
+  }
+  catch (\Throwable $e) {
+    $variables['empire_collection_count'] = 0;
+  }
+  // Recount when the video catalog changes.
+  $variables['#cache']['tags'][] = 'node_list:empire_video';
+}
+
+/**
+ * Resolve [url, alt] for an image from a media entity (image source field).
+ */
+function _empire_theme_media_image_url(?EntityInterface $media): array {
+  if (!$media instanceof MediaInterface) {
+    return ['', ''];
+  }
+  $source_field = $media->getSource()->getConfiguration()['source_field'] ?? '';
+  $item = $source_field && !$media->get($source_field)->isEmpty() ? $media->get($source_field)->first() : NULL;
+  $fid = $media->getSource()->getSourceFieldValue($media);
+  $file = $fid ? File::load($fid) : NULL;
+  $url = $file ? \Drupal::service('file_url_generator')->generateString($file->getFileUri()) : '';
+  $alt = $item && isset($item->alt) ? (string) $item->alt : '';
+  return [$url, $alt];
+}
+
+/**
+ * Resolve the oEmbed thumbnail URL from a remote_video media entity.
+ */
+function _empire_theme_oembed_thumbnail(?EntityInterface $media): array {
+  if (!$media instanceof MediaInterface || !$media->hasField('thumbnail') || $media->get('thumbnail')->isEmpty()) {
+    return ['', ''];
+  }
+  $file = $media->get('thumbnail')->entity;
+  $url = $file instanceof FileInterface ? \Drupal::service('file_url_generator')->generateString($file->getFileUri()) : '';
+  return [$url, (string) ($media->get('thumbnail')->alt ?? '')];
+}
+
+/**
+ * Returns a URL only if it uses a safe scheme, else '#'.
+ *
+ * Defense-in-depth for hrefs the card/hero SDCs render directly: blocks
+ * javascript:/data: and other dangerous schemes from reaching the href if a
+ * future caller ever sets the URL from untrusted input. Allows root-relative /
+ * internal paths (what Url::toString() produces) and explicit http(s) URLs.
+ */
+function _empire_theme_safe_href(string $url): string {
+  if ($url === '') {
+    return '#';
+  }
+  // Protocol-relative URLs resolve to an external origin — reject before the
+  // root-relative check below (they also start with '/'). Covers //host and
+  // /\host (browsers normalize the backslash to '/').
+  if (str_starts_with($url, '//') || str_starts_with($url, '/\\')) {
+    return '#';
+  }
+  // Root-relative paths, fragments, and queries carry no scheme — safe.
+  if (in_array($url[0], ['/', '#', '?'], TRUE)) {
+    return $url;
+  }
+  // Anything else must be an explicit http(s) URL.
+  return preg_match('#^https?://#i', $url) === 1 ? $url : '#';
+}
+
+/**
+ * Extracts the YouTube video ID from a node's Remote Video (field_video).
+ *
+ * Used only for the optional muted hero preview; returns '' when there is no
+ * oEmbed video or it isn't a recognisable YouTube URL.
+ */
+function _empire_theme_youtube_id(NodeInterface $node): string {
+  if (!$node->hasField('field_video') || $node->get('field_video')->isEmpty()) {
+    return '';
+  }
+  $media = $node->get('field_video')->entity;
+  if (!$media instanceof MediaInterface || !$media->hasField('field_media_oembed_video')) {
+    return '';
+  }
+  $url = (string) $media->get('field_media_oembed_video')->value;
+  // YouTube IDs are 11 chars; pull from watch?v=, youtu.be/, /embed/, /shorts/.
+  if (preg_match('#(?:v=|be/|embed/|shorts/)([\w-]{11})#', $url, $matches)) {
+    return $matches[1];
+  }
+  return '';
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for nodes.
+ *
+ * Builds the `empire_card` variable for empire_video nodes. The display-artwork
+ * fallback (SPEC §13) lives here, ONCE: editor artwork → oEmbed thumbnail →
+ * placeholder. Templates that render a card consume `empire_card` only.
+ */
+function empire_theme_preprocess_node(array &$variables): void {
+  $node = $variables['node'] ?? NULL;
+  if (!$node || $node->bundle() !== 'empire_video') {
+    return;
+  }
+
+  // 1. Editor-uploaded artwork wins.
+  $src = '';
+  $alt = $node->label();
+  if ($node->hasField('field_artwork') && !$node->get('field_artwork')->isEmpty()) {
+    [$src, $art_alt] = _empire_theme_media_image_url($node->get('field_artwork')->entity);
+    if ($src !== '' && $art_alt !== '') {
+      $alt = $art_alt;
+    }
+  }
+
+  // 2. Fall back to the Remote Video oEmbed thumbnail.
+  if ($src === '' && $node->hasField('field_video') && !$node->get('field_video')->isEmpty()) {
+    [$thumb, $thumb_alt] = _empire_theme_oembed_thumbnail($node->get('field_video')->entity);
+    if ($thumb !== '') {
+      $src = $thumb;
+      $alt = $thumb_alt !== '' ? $thumb_alt : $node->label();
+    }
+  }
+  // 3. If $src is still empty, the card renders the Empire placeholder itself.
+  // The watch page reuses the resolved §13 image as a pre-play poster (shown
+  // behind the consent placeholder until the player loads).
+  $variables['empire_watch_poster'] = $src;
+
+  // §7/§25: an editor-marked "unavailable" video shows a clear state on the
+  // watch page (poster + message) instead of a broken/blank player.
+  $variables['empire_unavailable'] = $node->hasField('field_source_status')
+    && $node->get('field_source_status')->value === 'unavailable';
+
+  $meta = '';
+  $published = 0;
+  if ($node->hasField('field_source_published') && !$node->get('field_source_published')->isEmpty()) {
+    $published = (int) $node->get('field_source_published')->value;
+    $meta = \Drupal::service('date.formatter')->format($published, 'custom', 'M j, Y');
+  }
+  // Watch page uses the same published date.
+  $variables['empire_watch_date'] = $meta;
+
+  // Watch page: "Watch on YouTube" source link (the original video URL).
+  // Only accept http(s): field_source_url is editor-editable plain text, so
+  // guard against a javascript:/data: scheme reaching the rendered href.
+  $variables['empire_watch_source_url'] = '';
+  if ($node->hasField('field_source_url') && !$node->get('field_source_url')->isEmpty()) {
+    $item = $node->get('field_source_url')->first();
+    $candidate = $item->uri ?? $item->value ?? '';
+    if (preg_match('#^https?://#i', (string) $candidate)) {
+      $variables['empire_watch_source_url'] = $candidate;
+    }
+  }
+
+  $url = _empire_theme_safe_href($node->toUrl()->toString());
+  $is_featured = !$node->get('field_featured')->isEmpty() && $node->get('field_featured')->value;
+  // "New" badge: published in the last 14 days (yields to the Featured hero).
+  $is_new = $published > 0
+    && (\Drupal::time()->getRequestTime() - $published) < (14 * 86400);
+
+  $variables['empire_card'] = [
+    'title' => $node->label(),
+    'url' => $url,
+    'image_src' => $src,
+    'image_alt' => $alt,
+    'badge' => $is_featured ? t('Featured') : ($is_new ? t('New') : ''),
+    'meta' => $meta,
+  ];
+
+  // Hero billboard variables (used by the `hero` view mode).
+  $description = '';
+  if ($node->hasField('field_content') && !$node->get('field_content')->isEmpty()) {
+    $description = mb_substr(trim(strip_tags((string) $node->get('field_content')->value)), 0, 240);
+  }
+  $variables['empire_hero'] = [
+    'title' => $node->label(),
+    'description' => $description,
+    'image_src' => $src,
+    'image_alt' => $alt,
+    'url' => $url,
+    'badge' => t('Featured'),
+    'cta_label' => t('Watch now'),
+  ];
+
+  // Optional muted autoplay preview (theme setting empire_hero_motion; default
+  // 'poster'). Kept OUT of the hero SDC props (theme-internal data, not an
+  // authorable component prop): hero-preview.js injects the preview into the
+  // backdrop via the wrapper template. When enabled it embeds YouTube before
+  // consent: an owner-enabled divergence from the privacy-first default. Never
+  // for an editor-marked unavailable video. See theme-settings.php.
+  $variables['empire_hero_video'] = '';
+  $motion = \Drupal::service('Drupal\Core\Extension\ThemeSettingsProvider')
+    ->getSetting('empire_hero_motion', 'empire_theme') ?: 'poster';
+  if ($motion === 'autoplay' && empty($variables['empire_unavailable'])) {
+    $video_id = _empire_theme_youtube_id($node);
+    if ($video_id !== '') {
+      $variables['empire_hero_video'] = $video_id;
+      $variables['#attached']['library'][] = 'empire_theme/hero-preview';
+    }
+  }
+}

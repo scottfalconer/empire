@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_youtube_channel_url
+    - taxonomy.vocabulary.empire_channel
+  module:
+    - link
+id: taxonomy_term.empire_channel.field_youtube_channel_url
+field_name: field_youtube_channel_url
+entity_type: taxonomy_term
+bundle: empire_channel
+label: 'Channel URL'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  title: 1
+  link_type: 17
+field_type: link
+

@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Collection
+vid: empire_collection
+description: 'Editorial rows/categories for the video site.'
+weight: 0
+new_revision: false
+

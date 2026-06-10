@@ -1,0 +1,18 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Badge
+group: Empire
+status: stable
+description: "A small label, e.g. Featured, New, or Live."
+props:
+  type: object
+  properties:
+    text:
+      type: string
+      title: Text
+      examples:
+        - "Featured"
+    variant:
+      type: string
+      title: Style
+      enum: [accent, neutral, live]
+      default: accent

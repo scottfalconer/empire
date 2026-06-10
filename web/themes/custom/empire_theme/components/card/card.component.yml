@@ -1,0 +1,37 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Card
+group: Empire
+status: stable
+description: "A video card: artwork (with play affordance), title, optional badge and meta. Links to the video's page. The base list/grid/rail unit for empire_video."
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+      examples:
+        - "How I edit my videos"
+    url:
+      type: string
+      title: Link
+      format: uri-reference
+      examples:
+        - "/watch/how-i-edit"
+    image_src:
+      type: string
+      title: Artwork URL
+      description: "Poster/thumbnail image URL. Empty renders the Empire placeholder."
+    image_alt:
+      type: string
+      title: Artwork alt text
+      default: ""
+    badge:
+      type: string
+      title: Badge
+      description: "Small label over the artwork, e.g. Featured or Live."
+      default: ""
+    meta:
+      type: string
+      title: Meta line
+      description: "Secondary text under the title, e.g. a date or collection."
+      default: ""

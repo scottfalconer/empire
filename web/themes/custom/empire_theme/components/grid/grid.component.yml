@@ -1,0 +1,16 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Grid
+group: Empire
+status: stable
+description: "A responsive grid of cards or items."
+props:
+  type: object
+  properties:
+    columns:
+      type: string
+      title: Columns
+      enum: ["auto", "2", "3", "4"]
+      default: "auto"
+slots:
+  items:
+    title: Items

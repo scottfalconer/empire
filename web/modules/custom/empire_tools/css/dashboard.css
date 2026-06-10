@@ -1,0 +1,53 @@
+/**
+ * Empire dashboard (/admin/empire) — Gin-native cards matching Empire Admin.html.
+ * Uses Gin's CSS variables (light fallbacks) so it sits in the admin theme, not
+ * cinematic-skinned.
+ */
+.empire-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  max-width: 1120px;
+  margin-top: 1rem;
+}
+.empire-dash__card {
+  padding: 18px 22px;
+  border-radius: 12px;
+  background: var(--gin-bg-layer, #fff);
+  border: 1px solid var(--gin-border-color, #e2e8f0);
+  color: var(--gin-color-text, inherit);
+}
+.empire-dash__card h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.empire-dash__card h3 {
+  margin: 0 0 12px;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--gin-color-text-light, #6b7280);
+}
+.empire-dash__banner {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-color: color-mix(in oklab, #e22247 35%, var(--gin-border-color, #e2e8f0));
+  box-shadow: inset 4px 0 0 #e22247;
+}
+.empire-dash__banner p { margin: 0; color: var(--gin-color-text-light, #6b7280); }
+.empire-dash__stat { font-size: 1.4rem; font-weight: 700; margin: 0; }
+.empire-dash__muted { color: var(--gin-color-text-light, #6b7280); font-size: .9rem; margin: 4px 0 14px; }
+.empire-dash__list { list-style: none; margin: 0; padding: 0; }
+.empire-dash__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--gin-border-color-layer, #eef1f5);
+}
+.empire-dash__list li:last-child { border-bottom: 0; }
+.empire-dash__list b { white-space: nowrap; }
+.empire-dash__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.empire-dash__empty { grid-column: 1 / -1; max-width: 560px; }
+.empire-dash__nudge { background: var(--gin-bg-app, #f6f8fb); }

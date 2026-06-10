@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_import_enabled
+    - taxonomy.vocabulary.empire_channel
+id: taxonomy_term.empire_channel.field_import_enabled
+field_name: field_import_enabled
+entity_type: taxonomy_term
+bundle: empire_channel
+label: 'Import enabled'
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'On'
+  off_label: 'Off'
+field_type: boolean
+

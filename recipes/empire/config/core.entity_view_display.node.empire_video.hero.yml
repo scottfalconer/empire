@@ -1,0 +1,46 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.hero
+    - field.field.node.empire_video.feeds_item
+    - field.field.node.empire_video.field_artwork
+    - field.field.node.empire_video.field_channel
+    - field.field.node.empire_video.field_collection
+    - field.field.node.empire_video.field_content
+    - field.field.node.empire_video.field_featured
+    - field.field.node.empire_video.field_imported_at
+    - field.field.node.empire_video.field_source_description
+    - field.field.node.empire_video.field_source_guid
+    - field.field.node.empire_video.field_source_published
+    - field.field.node.empire_video.field_source_status
+    - field.field.node.empire_video.field_source_title
+    - field.field.node.empire_video.field_source_url
+    - field.field.node.empire_video.field_tags
+    - field.field.node.empire_video.field_video
+    - node.type.empire_video
+  module:
+    - user
+id: node.empire_video.hero
+targetEntityType: node
+bundle: empire_video
+mode: hero
+content: {  }
+hidden:
+  feeds_item: true
+  field_artwork: true
+  field_channel: true
+  field_collection: true
+  field_content: true
+  field_featured: true
+  field_imported_at: true
+  field_source_description: true
+  field_source_guid: true
+  field_source_published: true
+  field_source_status: true
+  field_source_title: true
+  field_source_url: true
+  field_tags: true
+  field_video: true
+  links: true
+

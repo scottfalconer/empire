@@ -1,0 +1,36 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Hero billboard
+group: Empire
+status: stable
+description: "Cinematic featured-video lead for the homepage: full-bleed artwork, gradient scrim, title, optional description, and a watch CTA."
+props:
+  type: object
+  properties:
+    title:
+      type: string
+      title: Title
+      examples:
+        - "The season finale is here"
+    description:
+      type: string
+      title: Description
+      default: ""
+    image_src:
+      type: string
+      title: Backdrop URL
+    image_alt:
+      type: string
+      title: Backdrop alt text
+      default: ""
+    url:
+      type: string
+      title: Watch link
+      format: uri-reference
+    badge:
+      type: string
+      title: Badge
+      default: "Featured"
+    cta_label:
+      type: string
+      title: CTA label
+      default: "Watch now"

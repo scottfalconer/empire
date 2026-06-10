@@ -1,0 +1,88 @@
+/**
+ * Empire design tokens — ported from the design system
+ * (docs/empire/design/empire/project/assets/empire.css :root).
+ *
+ * The canonical tokens (--bg, --accent, --radius, …) are the design's own names
+ * and values; new/re-skinned components (Phase B+) use them directly. The
+ * --empire-* block keeps the build-phase components working by re-pointing to the
+ * design palette until each is re-skinned to the empire.css classes.
+ */
+:root {
+  /* ---- Canonical design tokens (from empire.css) ----
+   * Exceptions: --muted-2 lightened for WCAG AA (see below); --sans/--display
+   * append system-font fallbacks for graceful degradation before the webfonts load. */
+  --bg: #0b0b0e;
+  --bg-1: #0f0f14;
+  --bg-2: #16161d;
+  --bg-3: #1d1d26;
+  --line: rgba(255, 255, 255, .08);
+  --line-2: rgba(255, 255, 255, .14);
+  --text: #f4f4f6;
+  --muted: #a7a7b4;
+  --muted-2: #84848e; /* bumped from design #74747f (≈4.26:1) → AA 4.5 on --bg (Phase G) */
+  --accent: #ff3b5c;
+  --accent-press: #e22247;
+  --on-accent: #170509;
+  /* radius system (design refresh): one scale, used everywhere */
+  --r-card: 12px;
+  --r-tile: 16px;
+  --r-panel: 20px;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --nav-h: 68px;
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --sans: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display: "Bricolage Grotesque", "Manrope", system-ui, sans-serif;
+
+  /* ---- Accent-derived tints (design refresh) ----
+   * The channel's accent suffuses the whole UI via color-mix: glows, soft
+   * washes, and a lightened accent (--accent-hi) reserved for accent-colored
+   * TEXT (AA on --bg); plain --accent is for fills/ticks/scrim glows. */
+  --glow: color-mix(in oklab, var(--accent) 14%, transparent);
+  --glow-soft: color-mix(in oklab, var(--accent) 7%, transparent);
+  --accent-hi: color-mix(in oklab, var(--accent) 86%, white);
+  --ring: inset 0 0 0 1px rgba(255, 255, 255, .07);
+
+  /* ---- Back-compat aliases (build-phase components → design palette) ---- */
+  --empire-bg: var(--bg);
+  --empire-bg-elevated: var(--bg-1);
+  --empire-surface: var(--bg-2);
+  --empire-surface-hover: var(--bg-3);
+  --empire-border: var(--line);
+  --empire-text: var(--text);
+  --empire-text-muted: var(--muted);
+  --empire-text-dim: var(--muted-2);
+  --empire-accent: var(--accent);
+  --empire-accent-hover: var(--accent-hi);
+  --empire-accent-contrast: var(--on-accent);
+  --empire-danger: #e5484d;
+  --empire-font-sans: var(--sans);
+  --empire-font-display: var(--display);
+  --empire-radius-sm: var(--radius-sm);
+  --empire-radius: var(--radius);
+  --empire-radius-lg: 16px;
+  --empire-radius-xl: 24px;
+  --empire-transition: 200ms var(--ease);
+
+  /* Scales the design doesn't tokenize but build-phase components still use. */
+  --empire-text-xs: 0.75rem;
+  --empire-text-sm: 0.875rem;
+  --empire-text-base: 1rem;
+  --empire-text-lg: 1.125rem;
+  --empire-text-xl: 1.375rem;
+  --empire-text-2xl: 1.875rem;
+  --empire-text-3xl: 2.5rem;
+  --empire-text-hero: clamp(2.25rem, 5vw, 4rem);
+  --empire-space-1: 0.25rem;
+  --empire-space-2: 0.5rem;
+  --empire-space-3: 0.75rem;
+  --empire-space-4: 1rem;
+  --empire-space-6: 1.5rem;
+  --empire-space-8: 2rem;
+  --empire-space-12: 3rem;
+  --empire-space-16: 4rem;
+  --empire-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --empire-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --empire-container: 1280px;
+  --empire-gutter: clamp(1rem, 4vw, 3rem);
+}

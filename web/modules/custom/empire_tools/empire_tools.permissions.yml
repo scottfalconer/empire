@@ -1,0 +1,12 @@
+access empire dashboard:
+  title: 'Access the Empire dashboard'
+  description: 'View the Empire setup dashboard and import status.'
+
+configure empire channel:
+  title: 'Configure the Empire channel'
+  description: 'Connect a YouTube channel and build the video site.'
+  restrict access: true
+
+refresh empire imports:
+  title: 'Refresh Empire imports'
+  description: 'Re-run the import to fetch new videos.'

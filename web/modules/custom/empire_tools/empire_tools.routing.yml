@@ -1,0 +1,23 @@
+empire_tools.dashboard:
+  path: '/admin/empire'
+  defaults:
+    _controller: '\Drupal\empire_tools\Controller\DashboardController::dashboard'
+    _title: 'Empire'
+  requirements:
+    _permission: 'access empire dashboard'
+
+empire_tools.setup:
+  path: '/admin/empire/setup'
+  defaults:
+    _form: '\Drupal\empire_tools\Form\SetupForm'
+    _title: 'Set up your video site'
+  requirements:
+    _permission: 'configure empire channel'
+
+empire_tools.refresh:
+  path: '/admin/empire/refresh'
+  defaults:
+    _form: '\Drupal\empire_tools\Form\RefreshForm'
+    _title: 'Refresh your imports'
+  requirements:
+    _permission: 'refresh empire imports'

@@ -1,0 +1,26 @@
+global:
+  css:
+    base:
+      css/fonts.css: {}
+      css/tokens.css: {}
+      css/base.css: {}
+      css/buttons.css: {}
+      css/badges.css: {}
+      css/app-shell.css: {}
+      css/views.css: {}
+      css/grid.css: {}
+      css/collections.css: {}
+      css/forms.css: {}
+  js:
+    js/nav.js: {}
+  dependencies:
+    - core/drupal
+
+# Opt-in muted hero preview (attached only when the empire_hero_motion theme
+# setting is 'autoplay'). See theme-settings.php / hero-preview.js.
+hero-preview:
+  js:
+    js/hero-preview.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

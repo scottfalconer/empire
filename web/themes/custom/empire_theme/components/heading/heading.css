@@ -1,0 +1,25 @@
+/**
+ * Empire heading — eyebrow (design kicker) + display-font title sized by level.
+ * Re-skinned to empire.css (.kicker / .row-title / .page-title scale).
+ */
+.empire-heading { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
+.empire-heading__eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.empire-heading__text {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--text);
+}
+h1.empire-heading__text { font-size: clamp(30px, 4vw, 46px); letter-spacing: -0.025em; }
+/* h2 = the design's .row-title (22px) — the rail-row use; section bands override to 28px. */
+h2.empire-heading__text { font-size: 22px; }
+h3.empire-heading__text { font-size: 22px; }
+h4.empire-heading__text { font-size: 19px; font-weight: 700; }

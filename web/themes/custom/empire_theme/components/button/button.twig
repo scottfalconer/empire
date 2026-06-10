@@ -1,0 +1,18 @@
+{#
+/**
+ * @file
+ * Empire button / CTA link — renders the design's `.btn` primitive (buttons.css).
+ *
+ * variant: primary|accent → accent · secondary|light → light · ghost · outline
+ *          · default (neutral surface). size: default | sm | lg.
+ */
+#}
+{% set vmap = {
+  primary: 'btn-accent', accent: 'btn-accent',
+  secondary: 'btn-light', light: 'btn-light',
+  ghost: 'btn-ghost', outline: 'btn-outline', default: '',
+} %}
+{% set smap = { sm: 'btn-sm', lg: 'btn-lg', default: '' } %}
+{% set vclass = vmap[variant|default('primary')]|default('btn-accent') %}
+{% set sclass = smap[size|default('default')]|default('') %}
+<a class="btn{{ vclass ? ' ' ~ vclass }}{{ sclass ? ' ' ~ sclass }}" href="{{ url|default('#') }}">{{ label }}</a>

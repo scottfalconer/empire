@@ -1,0 +1,31 @@
+/**
+ * Empire slider/rail — horizontal streaming row (design .row/.rail). Native scroll
+ * = keyboard + swipe; no hover-only controls. Used as a Canvas component; the
+ * homepage Views-block rails are styled in views.css to match.
+ */
+.empire-rail { position: relative; margin-bottom: 38px; }
+.empire-rail__title {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin: 0 0 14px;
+  padding-inline: clamp(18px, 4vw, 52px);
+}
+.empire-rail__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  padding: 6px clamp(18px, 4vw, 52px) 20px;
+  scroll-padding-left: clamp(18px, 4vw, 52px);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.empire-rail__track::-webkit-scrollbar { display: none; }
+.empire-rail__track > * {
+  flex: 0 0 min(300px, 78vw);
+  scroll-snap-align: start;
+}
+.empire-rail__track:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }

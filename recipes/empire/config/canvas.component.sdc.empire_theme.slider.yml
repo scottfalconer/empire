@@ -1,0 +1,28 @@
+langcode: en
+status: true
+dependencies:
+  theme:
+    - empire_theme
+label: Slider
+id: sdc.empire_theme.slider
+source: sdc
+source_local_id: 'empire_theme:slider'
+provider: empire_theme
+active_version: 01d4cfb18b7e0e01
+versioned_properties:
+  active:
+    settings:
+      prop_field_definitions:
+        title:
+          required: false
+          field_type: string
+          field_storage_settings: {  }
+          field_instance_settings: {  }
+          field_widget: string_textfield
+          default_value: null
+          expression: ℹ︎string␟value
+    fallback_metadata:
+      slot_definitions:
+        items:
+          title: Items
+

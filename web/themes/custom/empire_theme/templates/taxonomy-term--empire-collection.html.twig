@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * empire_collection term → cinematic collection tile (design .cat-tile).
+ *
+ * The whole tile links to the collection page. Gradient backdrop (hue by
+ * nth-child, in CSS) + veil + name; a video-count badge shows only when > 0.
+ * `empire_collection_count` is built in empire_theme_preprocess_taxonomy_term().
+ */
+#}
+<a class="cat-tile" href="{{ url }}">
+  <span class="cat-tile__bg" aria-hidden="true"></span>
+  <span class="cat-veil" aria-hidden="true"></span>
+  {% if empire_collection_count %}
+    <span class="cat-count">{{ empire_collection_count }} {{ empire_collection_count == 1 ? 'video'|t : 'videos'|t }}</span>
+  {% endif %}
+  <span class="cat-body">
+    <span class="cat-tile__title">{{ term.label }}</span>
+    {% set desc = term.getDescription()|striptags|trim %}
+    {% if desc %}<p>{{ desc }}</p>{% endif %}
+  </span>
+</a>

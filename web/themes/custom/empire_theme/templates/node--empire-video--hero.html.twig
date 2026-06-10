@@ -1,0 +1,19 @@
+{#
+/**
+ * @file
+ * empire_video in the `hero` view mode → the hero-billboard component.
+ * `empire_hero` is built in empire_theme_preprocess_node() (artwork fallback once).
+ *
+ * When the empire_hero_motion theme setting opts into autoplay, `empire_hero_video`
+ * carries the featured video's YouTube ID; a display:contents wrapper exposes it to
+ * hero-preview.js, which injects the muted preview into the hero backdrop. The SDC
+ * stays unchanged — the autoplay is theme-internal, not an authorable component prop.
+ */
+#}
+{% if empire_hero_video %}
+  <div class="empire-hero-mount" data-empire-hero-video="{{ empire_hero_video }}">
+    {% include 'empire_theme:hero-billboard' with empire_hero only %}
+  </div>
+{% else %}
+  {% include 'empire_theme:hero-billboard' with empire_hero only %}
+{% endif %}

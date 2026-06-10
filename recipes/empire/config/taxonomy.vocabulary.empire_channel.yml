@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies: {  }
+name: Channel
+vid: empire_channel
+description: 'Source YouTube channel (provenance). Multi-channel-ready.'
+weight: 0
+new_revision: false
+

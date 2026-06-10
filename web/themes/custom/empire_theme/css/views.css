@@ -1,0 +1,102 @@
+/**
+ * Empire Views output — homepage rows as cinematic horizontal rails (design .rail).
+ *
+ * Two homepage rail views:
+ *  - empire_latest_videos (block_latest): UNGROUPED → the view container itself is
+ *    one flex rail (targeted via :has(> div > .views-row .empire-card)).
+ *  - empire_homepage_rails (block_rails): GROUPED by collection → each group is a
+ *    titled rail via the views-view-unformatted--empire-homepage-rails template
+ *    (.empire-crail / __title / __track), so the collection name is a heading
+ *    ABOVE the scroll, not trapped inside (and clipped by) it.
+ *
+ * Scroll is native: swipe (touch), trackpad, keyboard (each card is a focusable
+ * link → Tab scrolls it into view). No hover-only controls (SPEC §24); the right
+ * edge fade signals there's more. /videos grid is styled in grid.css.
+ */
+
+/* ---- Ungrouped rail (latest videos): the view container IS the flex rail ---- */
+.empire-main.is-front .views-element-container:has(> div > .views-row .empire-card) { position: relative; }
+
+.empire-main.is-front .views-element-container > div:has(> .views-row .empire-card) {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  padding: 6px clamp(18px, 4vw, 52px) 20px;
+  scroll-padding-left: clamp(18px, 4vw, 52px);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.empire-main.is-front .views-element-container > div:has(> .views-row .empire-card)::-webkit-scrollbar {
+  display: none;
+}
+.empire-main.is-front .views-element-container > div:has(> .views-row .empire-card) > .views-row {
+  flex: 0 0 min(300px, 78vw);
+  scroll-snap-align: start;
+}
+
+/* right-edge fade — softens the cut + signals "more" */
+.empire-main.is-front .views-element-container:has(> div > .views-row .empire-card)::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 20px; right: 0;
+  width: clamp(18px, 4vw, 52px);
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(270deg, var(--bg) 12%, transparent);
+}
+
+/* ---- Grouped collection rails: each group = a heading ABOVE its own scroll track ---- */
+.empire-main.is-front .empire-crail { margin-bottom: 6px; }
+.empire-main.is-front .empire-crail__title {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin: 0 0 6px;
+  padding: 0 clamp(18px, 4vw, 52px);
+}
+.empire-main.is-front .empire-crail__track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  padding: 6px clamp(18px, 4vw, 52px) 20px;
+  scroll-padding-left: clamp(18px, 4vw, 52px);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.empire-main.is-front .empire-crail__track::-webkit-scrollbar { display: none; }
+.empire-main.is-front .empire-crail__track > .views-row {
+  flex: 0 0 min(300px, 78vw);
+  scroll-snap-align: start;
+}
+
+/* Front-page standalone rail heading (e.g. "Latest videos") aligns to the page
+   gutter — matching its rail cards + the collection-rail titles. Section-band
+   headings (newsletter/contact) sit inside .empire-section's own padding, so
+   they keep zero inline padding. */
+.empire-main.is-front .empire-heading { padding-inline: clamp(18px, 4vw, 52px); }
+.empire-main.is-front .empire-section .empire-heading { padding-inline: 0; }
+
+/* Signature accent tick before rail/row titles (design refresh). Scoped to the
+   front-page rails; the newsletter/contact section bands keep their own eyebrow
+   rule, so headings inside .empire-section are excluded. */
+.empire-main.is-front .empire-crail__title,
+.empire-main.is-front .empire-heading:not(.empire-section *) .empire-heading__text {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.empire-main.is-front .empire-crail__title::before,
+.empire-main.is-front .empire-heading:not(.empire-section *) .empire-heading__text::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 4px;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 45%, transparent));
+}

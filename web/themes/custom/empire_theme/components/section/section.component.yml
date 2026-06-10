@@ -1,0 +1,24 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Section
+group: Empire
+status: stable
+description: "A page section with an optional heading and a content slot. Used for rows and CTAs."
+props:
+  type: object
+  properties:
+    heading:
+      type: string
+      title: Heading
+      default: ""
+    eyebrow:
+      type: string
+      title: Eyebrow
+      default: ""
+    tone:
+      type: string
+      title: Tone
+      enum: [default, surface]
+      default: default
+slots:
+  content:
+    title: Content

@@ -1,0 +1,86 @@
+/**
+ * Empire /collections — collection tiles (design .cat-grid / .cat-tile).
+ * The empire_collections view renders terms as entities → the
+ * taxonomy-term--empire-collection template (.cat-tile). We lay them out as an
+ * auto-fill grid and give each a gradient backdrop (hue cycles by position).
+ */
+.empire-main:not(.is-front) .views-element-container > div:has(> .views-row .cat-tile) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 8px clamp(18px, 4vw, 52px) 80px;
+}
+
+.cat-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-tile);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: var(--ring);
+  transition: transform .22s var(--ease), box-shadow .22s var(--ease);
+}
+.cat-tile:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .16), 0 22px 48px rgba(0, 0, 0, .5);
+}
+.cat-tile:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+.cat-tile__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  --cat-hue: 220;
+  background: linear-gradient(135deg, hsl(var(--cat-hue), 42%, 26%), hsl(calc(var(--cat-hue) + 38), 48%, 13%));
+}
+/* hue variety by position */
+.views-row:nth-child(7n + 1) .cat-tile__bg { --cat-hue: 210; }
+.views-row:nth-child(7n + 2) .cat-tile__bg { --cat-hue: 280; }
+.views-row:nth-child(7n + 3) .cat-tile__bg { --cat-hue: 340; }
+.views-row:nth-child(7n + 4) .cat-tile__bg { --cat-hue: 160; }
+.views-row:nth-child(7n + 5) .cat-tile__bg { --cat-hue: 30; }
+.views-row:nth-child(7n + 6) .cat-tile__bg { --cat-hue: 250; }
+.views-row:nth-child(7n + 7) .cat-tile__bg { --cat-hue: 110; }
+
+.cat-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(0deg, rgba(8, 8, 11, .94), rgba(8, 8, 11, .12) 58%),
+    linear-gradient(90deg, rgba(8, 8, 11, .6), transparent 62%);
+}
+.cat-count {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, .5);
+  padding: 4px 10px;
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.cat-body {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+}
+.cat-body .cat-tile__title {
+  display: block;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin: 0;
+  color: #fff;
+}
+.cat-body p { font-size: 13px; color: rgba(255, 255, 255, .78); margin: 4px 0 0; }

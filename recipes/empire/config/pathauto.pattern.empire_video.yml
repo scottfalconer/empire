@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - node.type.empire_video
+  module:
+    - node
+id: empire_video
+label: 'Empire video'
+type: 'canonical_entities:node'
+pattern: '/watch/[node:title]'
+selection_criteria:
+  315970f2-17f5-4b3c-8fb4-8e68eb8fa05a:
+    id: 'entity_bundle:node'
+    negate: false
+    context_mapping:
+      node: node
+    bundles:
+      empire_video: empire_video
+selection_logic: and
+weight: -10
+relationships: {  }
+

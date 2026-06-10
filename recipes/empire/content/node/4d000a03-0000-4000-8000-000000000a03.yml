@@ -1,0 +1,36 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: 4d000a03-0000-4000-8000-000000000a03
+  bundle: page
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: Terms
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  moderation_state:
+    -
+      value: published
+  path:
+    -
+      alias: /terms
+      langcode: en
+  field_content:
+    -
+      value: '<p>This is a starter Terms page for a site built with the Empire template. Replace it with your own terms of use.</p>'
+      format: content_format
+  field_description:
+    -
+      value: 'The terms of use for this video site built with the Empire template.'

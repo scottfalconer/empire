@@ -1,0 +1,39 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - options
+  theme:
+    - empire_theme
+label: Badge
+id: sdc.empire_theme.badge
+source: sdc
+source_local_id: 'empire_theme:badge'
+provider: empire_theme
+active_version: 553bd8c334e95fc3
+versioned_properties:
+  active:
+    settings:
+      prop_field_definitions:
+        text:
+          required: false
+          field_type: string
+          field_storage_settings: {  }
+          field_instance_settings: {  }
+          field_widget: string_textfield
+          default_value:
+            -
+              value: Featured
+          expression: ℹ︎string␟value
+        variant:
+          required: false
+          field_type: list_string
+          field_storage_settings:
+            allowed_values_function: canvas_load_allowed_values_for_component_prop
+          field_instance_settings: {  }
+          field_widget: options_select
+          default_value: null
+          expression: ℹ︎list_string␟value
+    fallback_metadata:
+      slot_definitions: {  }
+

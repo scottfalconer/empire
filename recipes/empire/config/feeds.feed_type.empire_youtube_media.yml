@@ -1,0 +1,54 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.media.remote_video.field_media_oembed_video
+    - media.type.remote_video
+  module:
+    - media
+id: empire_youtube_media
+label: 'YouTube → Remote Video media'
+description: 'Creates and dedupes playable Remote Video media from a YouTube channel Atom feed. Empire Tools runs this feed first.'
+help: ''
+import_period: 3600
+import_period_per_feed: false
+fetcher: http
+fetcher_configuration:
+  auto_detect_feeds: false
+  use_pubsubhubbub: false
+  always_download: false
+  fallback_hub: ''
+  request_timeout: 30
+parser: syndication
+parser_configuration: {  }
+processor: 'entity:media'
+processor_configuration:
+  values:
+    bundle: remote_video
+  langcode: en
+  insert_new: 1
+  update_existing: 2
+  update_non_existent: _keep
+  skip_hash_check: false
+  skip_validation: false
+  skip_validation_types: {  }
+  authorize: false
+  revision: false
+  expire: -1
+  owner_feed_author: false
+  owner_id: 1
+custom_sources: {  }
+mappings:
+  -
+    target: name
+    map:
+      value: title
+    settings: {  }
+  -
+    target: field_media_oembed_video
+    map:
+      value: url
+    settings: {  }
+    unique:
+      value: '1'
+

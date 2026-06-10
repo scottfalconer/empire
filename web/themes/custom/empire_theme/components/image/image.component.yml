@@ -1,0 +1,24 @@
+"$schema": "https://git.drupalcode.org/project/drupal/-/raw/HEAD/core/assets/schemas/v1/metadata.schema.json"
+name: Image
+group: Empire
+status: stable
+description: "A responsive image with an aspect ratio and optional caption."
+props:
+  type: object
+  properties:
+    src:
+      type: string
+      title: Image URL
+    alt:
+      type: string
+      title: Alt text
+      default: ""
+    ratio:
+      type: string
+      title: Aspect ratio
+      enum: ["16:9", "4:3", "1:1", "auto"]
+      default: "16:9"
+    caption:
+      type: string
+      title: Caption
+      default: ""

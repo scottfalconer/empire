@@ -1,0 +1,40 @@
+/**
+ * Empire buttons — the .btn primitive (ported from empire.css). A global
+ * primitive shared by the SDC button component, the nav/footer chrome, the hero
+ * CTAs, and forms. Presentation only.
+ */
+.btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 44px; padding: 0 20px; border-radius: 10px;
+  font-weight: 700; font-size: 15px; letter-spacing: -.01em;
+  background: var(--bg-3); color: var(--text); text-decoration: none;
+  transition: transform .15s var(--ease), background .18s, filter .18s, opacity .18s, box-shadow .18s;
+  white-space: nowrap;
+}
+.btn:hover { background: #262630; }
+.btn:active { transform: translateY(1px) scale(.99); }
+.btn svg { width: 19px; height: 19px; }
+/* Design refresh: accent buttons lift + cast an accent glow on hover. */
+.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn-accent:hover { background: var(--accent-hi); transform: translateY(-1px); box-shadow: 0 8px 24px var(--glow); }
+.btn-light { background: #f4f4f6; color: #121216; }
+.btn-light:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.btn-ghost { background: rgba(255, 255, 255, .10); color: var(--text); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.btn-ghost:hover { background: rgba(255, 255, 255, .18); }
+.btn-outline { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.btn-outline:hover { background: rgba(255, 255, 255, .06); }
+.btn-sm { height: 38px; padding: 0 15px; font-size: 14px; }
+.btn-lg { height: 52px; padding: 0 26px; font-size: 16px; }
+.btn-icon {
+  width: 42px; height: 42px; padding: 0; justify-content: center;
+  border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line-2);
+  background: rgba(20, 20, 26, .4); color: var(--text);
+}
+.btn-icon svg { width: 20px; height: 20px; }
+.btn-icon:hover { background: rgba(255, 255, 255, .12); box-shadow: inset 0 0 0 1.5px #fff; }
+.btn-icon:active { transform: translateY(1px) scale(.97); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+
+/* Subscribe = accent (YouTube-native CTA). */
+.btn-sub { background: var(--accent); color: var(--on-accent); }
+.btn-sub:hover { background: var(--accent-hi); transform: translateY(-1px); box-shadow: 0 8px 24px var(--glow); }

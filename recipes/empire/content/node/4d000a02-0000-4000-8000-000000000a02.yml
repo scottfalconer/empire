@@ -1,0 +1,36 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: 4d000a02-0000-4000-8000-000000000a02
+  bundle: page
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: Privacy
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  moderation_state:
+    -
+      value: published
+  path:
+    -
+      alias: /privacy
+      langcode: en
+  field_content:
+    -
+      value: '<p>This site embeds videos hosted by YouTube. Videos do not load until you choose to load them; when you do, YouTube may set cookies and collect data under its own privacy policy.</p><p>This is a starter Privacy page. Replace it with your own privacy policy.</p>'
+      format: content_format
+  field_description:
+    -
+      value: 'How this video site handles your data and the YouTube videos it embeds.'

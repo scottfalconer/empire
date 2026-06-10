@@ -1,0 +1,9 @@
+{# Empire section — optional heading + content slot. #}
+<section class="empire-section empire-section--{{ tone|default('default') }}">
+  <div class="empire-section__inner">
+    {% if heading %}
+      {% include 'empire_theme:heading' with { text: heading, eyebrow: eyebrow|default(''), level: 2 } only %}
+    {% endif %}
+    <div class="empire-section__content">{% block content %}{% endblock %}</div>
+  </div>
+</section>

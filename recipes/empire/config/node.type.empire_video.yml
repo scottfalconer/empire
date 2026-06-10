@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies: {  }
+name: 'Empire Video'
+type: empire_video
+description: 'A video pulled from a YouTube channel. The canonical, editable public page for one video.'
+help: null
+new_revision: true
+preview_mode: 1
+display_submitted: false
+

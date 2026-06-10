@@ -1,0 +1,22 @@
+{#
+/**
+ * @file
+ * Empire homepage collection rails — each grouping (a collection) becomes a
+ * titled rail: the collection name is a heading ABOVE a horizontal-scroll track,
+ * so the title is never trapped inside (and clipped by) the scroll. The grouped
+ * view (empire_homepage_rails) otherwise emits `<h3> + rows` flat into one flex
+ * container, which puts the titles in the scroll. Presentation only.
+ *
+ * Style rules: .empire-crail / __title / __track in css/views.css.
+ */
+#}
+<section class="empire-crail">
+  {% if title %}
+    <h3 class="empire-crail__title">{{ title }}</h3>
+  {% endif %}
+  <div class="empire-crail__track" tabindex="0" role="region" aria-label="{{ title|default('Video rail'|t) }}">
+    {% for row in rows %}
+      <div{{ row.attributes.addClass('views-row') }}>{{ row.content }}</div>
+    {% endfor %}
+  </div>
+</section>

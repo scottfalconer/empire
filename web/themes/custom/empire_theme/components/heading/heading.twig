@@ -1,0 +1,6 @@
+{# Empire heading — eyebrow + h{level}. #}
+{% set tag = 'h' ~ (level|default(2)) %}
+<div class="empire-heading">
+  {% if eyebrow %}<span class="empire-heading__eyebrow">{{ eyebrow }}</span>{% endif %}
+  <{{ tag }} class="empire-heading__text">{{ text }}</{{ tag }}>
+</div>

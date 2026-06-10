@@ -1,0 +1,10 @@
+{#
+/**
+ * @file
+ * empire_video in the `card` view mode → the Empire card component.
+ *
+ * `empire_card` is built in empire_theme_preprocess_node() (artwork fallback lives
+ * there, once). This template just maps it to the SDC card.
+ */
+#}
+{% include 'empire_theme:card' with empire_card only %}

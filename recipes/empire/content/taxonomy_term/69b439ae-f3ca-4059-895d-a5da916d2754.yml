@@ -1,0 +1,23 @@
+_meta:
+  version: '1.0'
+  entity_type: taxonomy_term
+  uuid: 69b439ae-f3ca-4059-895d-a5da916d2754
+  bundle: empire_collection
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  name:
+    -
+      value: Latest
+  weight:
+    -
+      value: 0
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null

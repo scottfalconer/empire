@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Empire card — the base list/grid/rail unit for a video.
+ *
+ * Props: title, url, image_src, image_alt, badge, meta.
+ * Playback is NOT embedded here; the card links to the video page. Artwork is
+ * resolved upstream (custom → oEmbed → placeholder) so this component only renders.
+ */
+#}
+<article class="empire-card"{{ attributes ?? '' }}>
+  <a class="empire-card__link" href="{{ url|default('#') }}">
+    <div class="empire-card__media">
+      {% if image_src %}
+        <img class="empire-card__img" src="{{ image_src }}" alt="{{ image_alt|default(title) }}" loading="lazy">
+      {% else %}
+        <div class="empire-card__img empire-card__img--placeholder" aria-hidden="true">
+          <span class="empire-card__placeholder-mark">▶</span>
+        </div>
+      {% endif %}
+      {% if badge %}<span class="empire-card__badge empire-badge empire-badge--{{ badge == 'New'|t ? 'new' : 'accent' }}">{{ badge }}</span>{% endif %}
+    </div>
+    <div class="empire-card__body">
+      {# Card title is the link's label, not a section heading (avoids heading-order skips). #}
+      <div class="empire-card__title">{{ title }}</div>
+      {% if meta %}<p class="empire-card__meta">{{ meta }}</p>{% endif %}
+    </div>
+  </a>
+</article>

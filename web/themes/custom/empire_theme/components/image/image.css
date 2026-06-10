@@ -1,0 +1,18 @@
+/**
+ * Empire image — responsive, ratio-locked poster/artwork. Re-skinned to the
+ * design tokens (14px radius, surface placeholder, muted caption).
+ */
+.empire-image { margin: 0; }
+.empire-image__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.empire-image--16-9 .empire-image__img { aspect-ratio: 16 / 9; }
+.empire-image--4-3 .empire-image__img { aspect-ratio: 4 / 3; }
+.empire-image--1-1 .empire-image__img { aspect-ratio: 1 / 1; }
+.empire-image--auto .empire-image__img { aspect-ratio: auto; }
+.empire-image__caption { font-size: 13px; color: var(--muted); margin-top: 8px; }

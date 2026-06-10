@@ -1,0 +1,47 @@
+services:
+  empire_tools.channel_resolver:
+    class: Drupal\empire_tools\Service\ChannelInputResolver
+    arguments:
+      - '@http_client'
+      - '@logger.channel.empire_tools'
+  empire_tools.feed_instance_manager:
+    class: Drupal\empire_tools\Service\FeedInstanceManager
+    arguments:
+      - '@entity_type.manager'
+      - '@state'
+  empire_tools.thumbnail_upgrader:
+    class: Drupal\empire_tools\Service\ThumbnailUpgrader
+    arguments:
+      - '@http_client'
+      - '@file.repository'
+      - '@file_system'
+      - '@image.factory'
+      - '@logger.channel.empire_tools'
+  empire_tools.import_orchestrator:
+    class: Drupal\empire_tools\Service\EmpireImportOrchestrator
+    arguments:
+      - '@entity_type.manager'
+      - '@empire_tools.feed_instance_manager'
+      - '@empire_tools.thumbnail_upgrader'
+      - '@datetime.time'
+      - '@logger.channel.empire_tools'
+  empire_tools.setup_status:
+    class: Drupal\empire_tools\Service\EmpireSetupStatus
+    arguments:
+      - '@entity_type.manager'
+  empire_tools.homepage_builder:
+    class: Drupal\empire_tools\Service\HomepageBuilder
+    arguments:
+      - '@entity_type.manager'
+      - '@uuid'
+      - '@logger.channel.empire_tools'
+  logger.channel.empire_tools:
+    parent: logger.channel_base
+    arguments:
+      - empire_tools
+  empire_tools.recipe_subscriber:
+    class: Drupal\empire_tools\EventSubscriber\RecipeSubscriber
+    arguments:
+      - '@empire_tools.homepage_builder'
+    tags:
+      - { name: event_subscriber }

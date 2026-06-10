@@ -1,0 +1,82 @@
+/**
+ * Empire setup — warm, zero-jargon first-run welcome (admin/Gin surface),
+ * matching Empire Admin.html. Gin-native body type with a touch of the Empire
+ * accent on the eyebrow + the "what happens next" step numbers.
+ */
+.empire-setup {
+  max-width: 640px;
+}
+/* Connected ("you're all set up") panel — a coral-tinted card with a left accent
+   stripe + a row of next-step buttons. The change-channel form sits in a
+   collapsed details below it. */
+.empire-setup__done {
+  margin: 0 0 24px;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: color-mix(in oklab, #e22247 6%, var(--gin-bg-layer, #fff));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, #e22247 26%, var(--gin-border-color, #e2e8f0)),
+    inset 4px 0 0 #e22247;
+}
+.empire-setup__done .empire-setup__lead { margin-bottom: 6px; }
+.empire-setup__done .empire-setup__sub { margin-bottom: 0; }
+.empire-setup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.empire-setup__eyebrow {
+  margin: 0 0 6px;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #e22247;
+}
+.empire-setup__lead {
+  margin: 0 0 10px;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: var(--gin-color-title, var(--gin-color-text, inherit));
+}
+.empire-setup__sub {
+  margin: 0;
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--gin-color-text-light, #54545c);
+}
+.empire-setup__steps {
+  list-style: none;
+  counter-reset: empire-step;
+  margin: 26px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--gin-border-color-layer, #eef1f5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+}
+.empire-setup__steps li {
+  counter-increment: empire-step;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-weight: 600;
+  color: var(--gin-color-text-light, #54545c);
+}
+.empire-setup__steps li::before {
+  content: counter(empire-step);
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in oklab, #e22247 13%, transparent);
+  color: #e22247;
+  font-weight: 800;
+  font-size: 13px;
+}

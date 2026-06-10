@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: redirect
+  uuid: f99af2b6-4a27-468a-a2bd-03658d39feea
+  bundle: redirect
+  default_langcode: und
+default:
+  enabled:
+    -
+      value: true
+  hash:
+    -
+      value: cYpAy0YtKnNlTnwpcOWf2frgOCPlNivdLR0588sKY-A
+  uid:
+    -
+      target_id: 0
+  redirect_source:
+    -
+      path: contact
+      query: {  }
+  redirect_redirect:
+    -
+      uri: 'internal:/form/contact-form'
+      title: null
+      options: {  }
+  status_code:
+    -
+      value: 301

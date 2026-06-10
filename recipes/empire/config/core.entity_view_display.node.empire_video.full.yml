@@ -1,0 +1,79 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.full
+    - field.field.node.empire_video.feeds_item
+    - field.field.node.empire_video.field_artwork
+    - field.field.node.empire_video.field_channel
+    - field.field.node.empire_video.field_collection
+    - field.field.node.empire_video.field_content
+    - field.field.node.empire_video.field_featured
+    - field.field.node.empire_video.field_imported_at
+    - field.field.node.empire_video.field_source_description
+    - field.field.node.empire_video.field_source_guid
+    - field.field.node.empire_video.field_source_published
+    - field.field.node.empire_video.field_source_status
+    - field.field.node.empire_video.field_source_title
+    - field.field.node.empire_video.field_source_url
+    - field.field.node.empire_video.field_tags
+    - field.field.node.empire_video.field_video
+    - node.type.empire_video
+  module:
+    - text
+    - user
+id: node.empire_video.full
+targetEntityType: node
+bundle: empire_video
+mode: full
+content:
+  field_collection:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 2
+    region: content
+  field_content:
+    type: text_default
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    weight: 1
+    region: content
+  field_tags:
+    type: entity_reference_label
+    label: hidden
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 3
+    region: content
+  field_video:
+    type: entity_reference_entity_view
+    label: hidden
+    settings:
+      view_mode: default
+      link: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  feeds_item: true
+  field_artwork: true
+  field_channel: true
+  field_featured: true
+  field_imported_at: true
+  field_source_description: true
+  field_source_guid: true
+  field_source_published: true
+  field_source_status: true
+  field_source_title: true
+  field_source_url: true
+

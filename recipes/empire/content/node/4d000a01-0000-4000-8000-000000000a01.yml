@@ -1,0 +1,36 @@
+_meta:
+  version: '1.0'
+  entity_type: node
+  uuid: 4d000a01-0000-4000-8000-000000000a01
+  bundle: page
+  default_langcode: en
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  title:
+    -
+      value: About
+  promote:
+    -
+      value: false
+  sticky:
+    -
+      value: false
+  moderation_state:
+    -
+      value: published
+  path:
+    -
+      alias: /about
+      langcode: en
+  field_content:
+    -
+      value: '<p>This is the official video site for our channel, built with the Empire site template — browse videos, explore collections, and watch, all in one cinematic place.</p><p>This is a starter About page. Edit it in the admin to tell your story.</p>'
+      format: content_format
+  field_description:
+    -
+      value: 'The official video site for our channel — browse videos, explore collections, and watch in one place.'

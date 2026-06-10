@@ -1,0 +1,105 @@
+/**
+ * Empire hero billboard — full-bleed cinematic lead, re-skinned to empire.css
+ * (.hero). Backdrop + left/bottom fades + radial text scrim; content bottom-left.
+ */
+.empire-hero {
+  position: relative;
+  height: min(86vh, 760px);
+  min-height: 540px;
+  display: flex;
+  align-items: flex-end;
+}
+.empire-hero__backdrop { position: absolute; inset: 0; overflow: hidden; }
+.empire-hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.empire-hero__fade-b {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(0deg, var(--bg) 2%, rgba(11, 11, 14, .35) 38%, transparent 70%);
+}
+.empire-hero__fade-l {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(11, 11, 14, .85) 0%, rgba(11, 11, 14, .25) 42%, transparent 65%);
+}
+.empire-hero__inner {
+  position: relative;
+  z-index: 3;
+  padding: 0 clamp(18px, 4vw, 52px) clamp(40px, 7vh, 86px);
+  max-width: 720px;
+}
+.empire-hero__inner::before {
+  content: "";
+  position: absolute; left: 0; bottom: 0; z-index: -1; pointer-events: none;
+  width: 150%; height: 150%;
+  background: radial-gradient(80% 75% at 14% 86%, rgba(6, 6, 9, .72), transparent 72%);
+}
+.empire-hero__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* Signature accent rule after the hero eyebrow (design refresh). */
+.empire-hero__eyebrow::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 52px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.empire-hero__title {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: .94;
+  font-size: clamp(40px, 6vw, 74px);
+  margin: 0 0 18px;
+  color: var(--text);
+  text-wrap: balance;
+}
+.empire-hero__desc {
+  font-size: 17px;
+  line-height: 1.5;
+  color: #d4d4dc;
+  max-width: 560px;
+  margin: 0 0 26px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.empire-hero__actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Wrapper carrying the autoplay video ID to hero-preview.js without adding a
+   box (no layout impact on the hero or the rails' negative-margin overlap). */
+.empire-hero-mount { display: contents; }
+
+/* Optional muted autoplay preview (opt-in `empire_hero_motion` setting). Sits
+   over the poster image but under the fades/scrims, so text protection still
+   applies. Fades in only once the embed has loaded (.is-live), else the still
+   poster remains. Injected into the backdrop by hero-preview.js. */
+.empire-hero__preview {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .8s var(--ease);
+}
+.empire-hero__preview.is-live { opacity: 1; }
+.empire-hero__preview iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 56.25vw;
+  min-height: 100%;
+  min-width: 177.78vh;
+  border: 0;
+  pointer-events: none;
+}

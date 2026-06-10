@@ -1,0 +1,94 @@
+/**
+ * Empire app shell — the cinematic chrome (sticky nav + footer) that frames
+ * every page. Ported from the design system (empire.css: .nav, .foot, .btn).
+ * Presentation only.
+ */
+
+/* Skip link is core's (#main-content), styled visually-hidden/focusable by core. */
+
+/* Main content — fixed 68px nav: front page is full-bleed (hero under the
+   transparent nav); other pages start below the nav. */
+.empire-main { display: block; min-height: 50vh; }
+.empire-main:not(.is-front) { padding-top: var(--nav-h); }
+/* Front page assumes a hero under the fixed nav; with no hero (empty state /
+   no featured video) the content must still clear the nav, plus breathing room. */
+.empire-main.is-front:not(:has(.empire-hero)) { padding-top: calc(var(--nav-h) + 28px); }
+
+/* Buttons (.btn / .btn-sub / .btn-icon …) live in css/buttons.css (global primitive). */
+
+/* ---- Nav ---- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60; height: var(--nav-h);
+  display: flex; align-items: center; gap: 26px;
+  padding: 0 clamp(18px, 4vw, 52px);
+  transition: background .3s, backdrop-filter .3s, box-shadow .3s;
+}
+.nav.scrolled { background: rgba(8, 8, 11, .86); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
+.nav::before {
+  content: ""; position: absolute; inset: 0 0 -40px 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, .7), transparent);
+  opacity: 1; transition: opacity .3s;
+}
+.nav.scrolled::before { opacity: 0; }
+.brand { display: flex; align-items: center; gap: 11px; cursor: pointer; text-decoration: none; color: var(--text); }
+.brand-logo {
+  width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+  background: var(--accent); color: var(--on-accent);
+  font-family: var(--display); font-weight: 800; font-size: 20px;
+}
+.brand-name { font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  padding: 8px 14px; border-radius: 8px; font-size: 15px; font-weight: 600; color: var(--muted);
+  transition: .15s; white-space: nowrap; cursor: pointer; text-decoration: none;
+}
+.nav-link:hover { color: var(--text); }
+.nav-link.on { color: var(--text); }
+.nav-spacer { flex: 1; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-gear { box-shadow: inset 0 0 0 1.5px var(--line-2); background: rgba(20, 20, 26, .4); }
+
+/* Collapse wrapper: desktop = inline flex row; mobile = dropdown panel. */
+.nav-collapse { flex: 1; display: flex; align-items: center; gap: 26px; }
+.nav-toggle { display: none; margin-left: auto; width: 44px; height: 44px; }
+.nav-toggle__close { display: none; }
+
+@media (max-width: 720px) {
+  .nav-toggle { display: grid; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__open { display: none; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle__close { display: block; }
+  .nav-collapse {
+    position: absolute;
+    top: var(--nav-h);
+    left: 0; right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px clamp(18px, 4vw, 52px) 18px;
+    background: rgba(8, 8, 11, .97);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, .5), inset 0 1px 0 var(--line);
+    display: none;
+  }
+  .nav-collapse[data-open] { display: flex; }
+  .nav-links { flex-direction: column; align-items: stretch; gap: 2px; }
+  .nav-link { padding: 12px 14px; font-size: 16px; }
+  .nav-spacer { display: none; }
+  .nav-right { gap: 10px; padding-top: 8px; }
+  .nav-right .btn { height: 46px; flex: 1; justify-content: center; }
+  .nav-right .btn-icon { flex: 0 0 46px; }
+}
+
+/* ---- Footer ---- */
+.foot { padding: 50px clamp(18px, 4vw, 52px) 40px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 24px; }
+.foot-main { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.foot-brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.foot-brand .brand-logo { width: 30px; height: 30px; font-size: 17px; }
+.foot-brand .brand-name { font-size: 18px; }
+.foot-links { display: flex; gap: 18px 22px; flex-wrap: wrap; flex: 1; }
+.foot-links a { font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; text-decoration: none; }
+.foot-links a:hover { color: var(--text); }
+.foot-base { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; color: var(--muted-2); font-size: 13px; padding-top: 22px; border-top: 1px solid var(--line); }
+.foot-base .made { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.foot-base .made b { color: var(--muted); font-weight: 700; }
+.foot-base .made svg { width: 14px; height: 14px; color: var(--accent); }

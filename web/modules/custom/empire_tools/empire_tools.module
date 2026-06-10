@@ -1,0 +1,167 @@
+<?php
+
+/**
+ * @file
+ * Onboarding and setup orchestration for the Empire video site template.
+ */
+
+use Drupal\Component\Utility\Unicode;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\file\FileInterface;
+use Drupal\media\MediaInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_help().
+ */
+function empire_tools_help($route_name, RouteMatchInterface $route_match) {
+  if ($route_name !== 'help.page.empire_tools') {
+    return NULL;
+  }
+
+  $output = '';
+  $output .= '<h3>' . t('About') . '</h3>';
+  $output .= '<p>' . t('Empire Tools turns a YouTube channel into a streaming-style video site. It resolves a channel from a handle or URL, provisions the Feeds importers that ingest it, orchestrates the import (media first, then editorial nodes), and provides the setup wizard, dashboard, and homepage composition.') . '</p>';
+
+  $output .= '<h3>' . t('Setting up a channel') . '</h3>';
+  $output .= '<ol>';
+  $output .= '<li>' . t('Go to Empire &rarr; Set up and paste a YouTube channel — a handle, a channel URL, a channel ID, or the channel feed URL.') . '</li>';
+  $output .= '<li>' . t('Empire resolves the channel, creates the media and node importers, and runs the first import. Videos arrive as Remote Video media and editorial Video nodes.') . '</li>';
+  $output .= '<li>' . t('Use the dashboard to check import status and re-run the import with Refresh.') . '</li>';
+  $output .= '</ol>';
+
+  $output .= '<h3>' . t('Curating videos') . '</h3>';
+  $output .= '<p>' . t('Edit a Video to change its title, mark it featured (it becomes the hero), or assign it to collections. Upload an image to the Artwork field to override the YouTube thumbnail everywhere the video appears. Editor changes are preserved when the import runs again.') . '</p>';
+
+  $output .= '<h3>' . t('Permissions') . '</h3>';
+  $output .= '<p>' . t('Setup, refresh, and the dashboard are limited to roles with the matching Empire permissions, granted to the Content editor role by default.') . '</p>';
+
+  return $output;
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Empire's SEO baseline (drupal_cms_seo_basic) ships clean URLs, sitemap, and
+ * redirects but not metatag. This stamps the rich SEO a video showcase needs on
+ * each empire_video watch page — a meta description, Open Graph + Twitter cards
+ * (so a pasted watch link renders a poster preview), and a JSON-LD VideoObject
+ * (Google video results) — without the heavier seo_tools stack. Imported videos
+ * often have no description (the no-API Atom feed carries none), so everything
+ * falls back to the title; an editor-written body overrides it.
+ */
+function empire_tools_page_attachments(array &$attachments): void {
+  if (\Drupal::routeMatch()->getRouteName() !== 'entity.node.canonical') {
+    return;
+  }
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if (!$node instanceof NodeInterface || $node->bundle() !== 'empire_video') {
+    return;
+  }
+
+  $title = (string) $node->label();
+  $body = _empire_tools_video_description($node);
+  $description = Unicode::truncate($body !== '' ? $body : $title, 200, TRUE, TRUE);
+  $url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
+  $poster = _empire_tools_video_poster_url($node);
+
+  // Meta description + Open Graph + Twitter card tags.
+  $metas = [
+    ['name', 'description', $description],
+    ['property', 'og:type', 'video.other'],
+    ['property', 'og:title', $title],
+    ['property', 'og:description', $description],
+    ['property', 'og:url', $url],
+    ['name', 'twitter:card', 'summary_large_image'],
+    ['name', 'twitter:title', $title],
+    ['name', 'twitter:description', $description],
+  ];
+  if ($poster !== '') {
+    $metas[] = ['property', 'og:image', $poster];
+    $metas[] = ['name', 'twitter:image', $poster];
+  }
+  foreach ($metas as [$attr, $name, $content]) {
+    $attachments['#attached']['html_head'][] = [
+      ['#tag' => 'meta', '#attributes' => [$attr => $name, 'content' => $content]],
+      'empire_seo_' . str_replace(':', '_', $name),
+    ];
+  }
+
+  // JSON-LD VideoObject for rich video search results.
+  $schema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'VideoObject',
+    'name' => $title,
+    'description' => $description,
+  ];
+  if ($poster !== '') {
+    $schema['thumbnailUrl'] = $poster;
+  }
+  if ($node->hasField('field_source_published') && !$node->get('field_source_published')->isEmpty()) {
+    $schema['uploadDate'] = date('c', (int) $node->get('field_source_published')->value);
+  }
+  if ($node->hasField('field_source_url') && !$node->get('field_source_url')->isEmpty()) {
+    $watch = (string) $node->get('field_source_url')->value;
+    if (preg_match('#^https?://#i', $watch)) {
+      $schema['contentUrl'] = $watch;
+      $schema['embedUrl'] = $watch;
+    }
+  }
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'script',
+      '#attributes' => ['type' => 'application/ld+json'],
+      '#value' => json_encode($schema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+    ],
+    'empire_video_schema',
+  ];
+}
+
+/**
+ * Returns a video's best meta/social description, or '' if none is set.
+ */
+function _empire_tools_video_description(NodeInterface $node): string {
+  foreach (['field_content', 'field_source_description'] as $field) {
+    if ($node->hasField($field) && !$node->get($field)->isEmpty()) {
+      $text = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $node->get($field)->value)));
+      if ($text !== '') {
+        return $text;
+      }
+    }
+  }
+  return '';
+}
+
+/**
+ * Absolute URL of a video's poster (editor artwork, else the video thumbnail).
+ */
+function _empire_tools_video_poster_url(NodeInterface $node): string {
+  $sources = [];
+  if ($node->hasField('field_artwork') && !$node->get('field_artwork')->isEmpty()) {
+    $sources[] = [$node->get('field_artwork')->entity, 'field_media_image'];
+  }
+  if ($node->hasField('field_video') && !$node->get('field_video')->isEmpty()) {
+    $sources[] = [$node->get('field_video')->entity, 'thumbnail'];
+  }
+  foreach ($sources as [$media, $field]) {
+    if ($media instanceof MediaInterface && $media->hasField($field) && !$media->get($field)->isEmpty()) {
+      $file = $media->get($field)->entity;
+      if ($file instanceof FileInterface) {
+        return \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+      }
+    }
+  }
+  return '';
+}
+
+/**
+ * Implements hook_gin_ignore_sticky_form_actions().
+ *
+ * The setup form (/admin/empire/setup) is a first-run landing screen, not a
+ * data-entry form. Gin's sticky action bar otherwise pins "Build my site" to
+ * the top of the page; opt it out so the button sits inline after the field.
+ * Harmless when Gin is not the admin theme.
+ */
+function empire_tools_gin_ignore_sticky_form_actions(): array {
+  return ['empire_tools_setup'];
+}

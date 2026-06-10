@@ -1,0 +1,26 @@
+/**
+ * Empire badge — small uppercase label (Featured / New / Collection / Live).
+ * Re-skinned to the design's badge look (empire.css .cover-badge): compact,
+ * heavy, wide tracking. Positioning is the caller's job (e.g. the card places it
+ * top-left); this only styles the pill.
+ */
+.empire-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  padding: 3px 7px;
+  border-radius: 5px;
+}
+.empire-badge--accent { background: var(--accent); color: var(--on-accent); }
+.empire-badge--neutral { background: rgba(255, 255, 255, 0.12); color: var(--text); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+/* Darkened from #e5484d (white text = 3.91:1, failed WCAG AA) to clear 4.5:1
+ * for this 10px badge: #cf2b32 on #fff = 5.19:1. Keep ≥ 4.5:1 if re-tinting. */
+.empire-badge--live { background: #cf2b32; color: #fff; }
+/* "New" (recent uploads) — a crisp light pill, distinct from the coral Featured.
+ * #121216 on #f4f4f6 ≈ 17:1, well above WCAG AA. */
+.empire-badge--new { background: #f4f4f6; color: #121216; }

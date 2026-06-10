@@ -1,0 +1,18 @@
+empire_tools.dashboard:
+  title: 'Empire'
+  description: 'Set up and manage your video site.'
+  route_name: empire_tools.dashboard
+  parent: system.admin
+  weight: -20
+
+empire_tools.setup:
+  title: 'Set up your video site'
+  route_name: empire_tools.setup
+  parent: empire_tools.dashboard
+  weight: 0
+
+empire_tools.refresh:
+  title: 'Refresh your imports'
+  route_name: empire_tools.refresh
+  parent: empire_tools.dashboard
+  weight: 1

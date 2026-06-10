@@ -1,0 +1,292 @@
+/**
+ * Empire base styles — reset, typography, layout, and streaming-style layout for
+ * the Views output (grids + collection rails). Component-specific styles live with
+ * each SDC component; this file owns page chrome and view scaffolding only.
+ */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  /* Accent-suffused backdrop (design refresh): the channel accent washes the
+     page via two faint radial tints over the base colour. */
+  background:
+    radial-gradient(110% 60% at 85% -8%, var(--glow-soft), transparent 55%),
+    radial-gradient(90% 50% at -10% 30%, color-mix(in oklab, var(--accent) 4%, transparent), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: var(--empire-text-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* ---- Design base primitives (empire.css) ---- */
+::selection { background: var(--accent); color: var(--on-accent); }
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: #2c2c36; border-radius: 20px; border: 3px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #3a3a47; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Honor reduced-motion globally (SPEC §24); components also gate animations on no-preference. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+a { color: var(--empire-accent); text-decoration: none; transition: color var(--empire-transition); }
+a:hover { color: var(--empire-accent-hover); }
+
+h1, h2, h3, h4 { font-family: var(--empire-font-display); line-height: 1.15; margin: 0 0 var(--empire-space-4); font-weight: 700; letter-spacing: -0.01em; }
+h1 { font-size: var(--empire-text-3xl); }
+h2 { font-size: var(--empire-text-2xl); }
+h3 { font-size: var(--empire-text-xl); }
+
+p { margin: 0 0 var(--empire-space-4); color: var(--empire-text-muted); }
+
+/* Accessibility: always-visible focus ring (SPEC §24) */
+:focus-visible {
+  outline: 3px solid var(--empire-accent);
+  outline-offset: 2px;
+  border-radius: var(--empire-radius-sm);
+}
+
+/* ---- Layout ---- */
+.layout-container,
+main { width: 100%; }
+
+/* ---- Views: section title ---- */
+.view { margin-block: var(--empire-space-8); }
+.view-header, .view .view-content > h3, .views-row + .views-row { }
+
+/* Grid display (empire_video_grid, empire_collection_page) */
+.views-view-grid,
+.view-empire-video-grid .view-content,
+.view-empire-collection-page .view-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--empire-space-6);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.views-view-grid > .views-row,
+.views-view-grid td { list-style: none; }
+
+/* Collection rails (empire_homepage_rails): each group is a horizontal rail */
+.view-empire-homepage-rails .views-row { display: inline-block; }
+.view-empire-homepage-rails details,
+.view-empire-homepage-rails .view-grouping {
+  margin-block: var(--empire-space-8);
+}
+.view-empire-homepage-rails .view-grouping-header {
+  font-size: var(--empire-text-xl);
+  font-weight: 700;
+  margin-bottom: var(--empire-space-4);
+  color: var(--empire-text);
+}
+.view-empire-homepage-rails .view-grouping-content {
+  display: flex;
+  gap: var(--empire-space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: var(--empire-space-4);
+  -webkit-overflow-scrolling: touch;
+}
+.view-empire-homepage-rails .view-grouping-content > .views-row {
+  flex: 0 0 clamp(220px, 30vw, 300px);
+  scroll-snap-align: start;
+}
+
+/* ---- Empty / first-run states (SPEC §25) ---- */
+.view-empty {
+  padding: var(--empire-space-12);
+  text-align: center;
+  color: var(--empire-text-muted);
+  background: var(--empire-surface);
+  border: 1px solid var(--empire-border);
+  border-radius: var(--empire-radius-lg);
+}
+
+/* ---- Watch / detail page (design .watch/.player/.watch-body) ---- */
+/* Full-bleed player; the .empire-main top padding (nav-h) sits above it. */
+.empire-watch__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - var(--nav-h));
+  background: #000;
+  overflow: hidden;
+}
+.empire-watch__stage :is(iframe, .media-oembed-content),
+.empire-watch__stage .field--name-field-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.empire-watch__stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* §13 poster — editor artwork (or the oEmbed thumbnail) shown before the
+   player loads; the consent placeholder sits over it, the iframe covers it. */
+.empire-watch__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* §7/§25 — editor-marked unavailable video: poster + clear notice, no player. */
+.empire-watch__unavailable {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 26px;
+  background: radial-gradient(120% 100% at 50% 0%, rgba(20, 20, 26, .55), rgba(8, 8, 11, .85));
+}
+.empire-watch__unavailable p {
+  max-width: 440px;
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Klaro consent placeholder — fills the player + centers a cinematic notice.
+   (Klaro keeps the oEmbed's tiny intrinsic size via inline style; override it.) */
+.empire-watch__stage [data-type="placeholder"] {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(120% 100% at 50% 0%, rgba(20, 20, 26, .42), rgba(8, 8, 11, .8));
+}
+.empire-watch__stage .klaro {
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  display: grid;
+  place-items: center;
+}
+.empire-watch__stage .context-notice {
+  max-width: 440px;
+  width: calc(100% - 32px);
+  height: auto !important; /* Klaro forces a fill height; shrink to content */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 26px 28px;
+  background: rgba(8, 8, 11, .66);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
+.empire-watch__stage .context-notice p { color: var(--text); font-size: 15px; line-height: 1.5; margin: 0; }
+.empire-watch__stage .context-notice .cm-buttons { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.empire-watch__stage .klaro .cm-btn {
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--bg-3);
+  color: var(--text);
+  border: none;
+  cursor: pointer;
+}
+.empire-watch__stage .klaro .cm-btn-success { background: var(--accent); color: var(--on-accent); }
+.empire-watch__stage .klaro .cm-btn-success:hover { filter: brightness(1.08); }
+.empire-watch__stage .cm-dialog-link { margin: 12px 0 0; }
+.empire-watch__stage .cm-dialog-link a { color: var(--muted); font-size: 13px; }
+.empire-watch__stage .cm-dialog-link a:hover { color: var(--text); }
+
+.empire-watch__info {
+  max-width: 900px;
+  padding: 26px clamp(18px, 4vw, 52px) 80px;
+}
+.empire-watch__title {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+.empire-watch__meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.empire-watch__collection a {
+  color: var(--accent);
+  font-weight: 700;
+}
+.empire-watch__desc { color: #d4d4dc; line-height: 1.6; font-size: 15px; margin-bottom: 22px; white-space: pre-wrap; }
+.empire-watch__desc p { color: #d4d4dc; }
+.empire-watch__source {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);
+}
+.empire-watch__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.empire-watch__tags a {
+  font-size: 12px;
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.empire-watch__tags a:hover { color: var(--text); }
+
+/* ---- Listing page header (design .page-head / .page-title) ---- */
+.page-head { padding: 24px clamp(18px, 4vw, 52px) 0; }
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--display);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -.025em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--text);
+}
+/* Signature accent tick before the page title (design refresh). */
+.page-title::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 5px;
+  height: .8em;
+  border-radius: 5px;
+  background: linear-gradient(180deg, var(--accent), color-mix(in oklab, var(--accent) 45%, transparent));
+}
+.page-sub { color: var(--muted); font-size: 16px; margin: 8px 0 0; max-width: 640px; }
+
+/* ---- Pager ---- */
+.pager__items { display: flex; gap: var(--empire-space-2); list-style: none; padding: 0; justify-content: center; flex-wrap: wrap; }
+.pager__item a { display: inline-block; padding: var(--empire-space-2) var(--empire-space-3); border: 1px solid var(--empire-border); border-radius: var(--empire-radius-sm); color: var(--empire-text); }
+.pager__item.is-active a { background: var(--empire-accent); color: var(--empire-accent-contrast); border-color: var(--empire-accent); }

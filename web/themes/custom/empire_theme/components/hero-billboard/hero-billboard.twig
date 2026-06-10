@@ -1,0 +1,35 @@
+{#
+/**
+ * @file
+ * Empire hero billboard — cinematic featured-video lead (design .hero).
+ *
+ * Props: title, description, image_src, image_alt, url, badge, cta_label.
+ * Full-bleed backdrop + left/bottom fades + radial text scrim, content bottom-left.
+ * Links to the watch page — still poster by default (no autoplay, SPEC §24). The
+ * optional muted preview (empire_hero_motion setting) is injected into the
+ * backdrop by hero-preview.js via the wrapper template, so it stays out of this
+ * component's authorable schema.
+ */
+#}
+<section class="empire-hero">
+  <div class="empire-hero__backdrop" aria-hidden="true">
+    {% if image_src %}
+      <img class="empire-hero__img" src="{{ image_src }}" alt="" loading="eager">
+    {% endif %}
+    <div class="empire-hero__fade-l"></div>
+    <div class="empire-hero__fade-b"></div>
+  </div>
+  <div class="empire-hero__inner">
+    {% if badge %}<span class="empire-hero__eyebrow">{{ badge }}</span>{% endif %}
+    <h1 class="empire-hero__title">{{ title }}</h1>
+    {% if description %}<p class="empire-hero__desc">{{ description }}</p>{% endif %}
+    {% if url %}
+      <div class="empire-hero__actions">
+        <a class="btn btn-light btn-lg" href="{{ url }}">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          {{ cta_label|default('Watch now') }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>

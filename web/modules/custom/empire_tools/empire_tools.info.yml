@@ -1,0 +1,11 @@
+name: Empire Tools
+type: module
+description: 'Onboarding and setup orchestration for the Empire video site template: channel resolution, feed provisioning, import orchestration, dashboard, and homepage composition.'
+package: Empire
+core_version_requirement: ^11
+dependencies:
+  - drupal:node
+  - drupal:media
+  - drupal:taxonomy
+  - feeds:feeds
+  - canvas:canvas
